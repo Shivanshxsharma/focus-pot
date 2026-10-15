@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "What the Focus Pot page may do: call Focus Pot's own commands (always allowed) and listen to the events the backend emits. Nothing else: no file system, shell or HTTP access from the page.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

@@ -1,0 +1,549 @@
+/*
+ * theme-material.css — Material 3 ("Material You") look
+ * ============================================================================
+ * Colour: Material 3 builds its whole scheme from ONE seed colour. Ours is
+ * your Windows accent, so the theme still matches your PC ("dynamic colour").
+ * Material's colour space (HCT) defines "tone" as CIE L*, which is exactly
+ * the L of CSS lch(); so `lch(from var(--seed) TONE CHROMA h)` produces each
+ * tonal palette right here in CSS (relative colour syntax).
+ * Dark-scheme tones follow M3 (primary 80, on-primary 20, container 30,
+ * on-container 90…), with the surfaces one step darker than M3's default
+ * for a deeper, more premium black.
+ *
+ * Shape: pill buttons and fields, 16px cards, 28px sheets, grouped lists with
+ * big outer corners (Android 16 style).
+ * Type: Google Sans Flex (bundled in ../fonts, OFL licence).
+ * Media card: modelled on Android's System UI media player: album art
+ * behind a scrim tinted with the art's colour, a big play button that morphs
+ * between a rounded square (paused) and a circle (playing), and a wavy
+ * progress line that flows while playing.
+ */
+
+@font-face {
+  font-family: 'Google Sans Flex';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url('../fonts/google-sans-flex-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Google Sans Flex';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url('../fonts/google-sans-flex-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+[data-ui='material'] {
+  color-scheme: dark;
+  --seed: var(--accent-base);
+
+  /* ── Material 3 dark scheme, generated from the seed ── */
+  --md-primary: lch(from var(--seed) 80 48 h);
+  --md-on-primary: lch(from var(--seed) 20 48 h);
+  --md-primary-container: lch(from var(--seed) 30 48 h);
+  --md-on-primary-container: lch(from var(--seed) 90 40 h);
+  --md-secondary-container: lch(from var(--seed) 26 14 h);
+  --md-on-secondary-container: lch(from var(--seed) 90 14 h);
+  --md-tertiary: lch(from var(--seed) 80 32 calc(h + 60));
+  --md-surface: lch(from var(--seed) 4 2 h);
+  --md-surface-container-low: lch(from var(--seed) 8 3 h);
+  --md-surface-container: lch(from var(--seed) 11 4 h);
+  --md-surface-container-high: lch(from var(--seed) 15 4 h);
+  --md-surface-container-highest: lch(from var(--seed) 20 5 h);
+  --md-on-surface: lch(from var(--seed) 92 3 h);
+  --md-on-surface-variant: lch(from var(--seed) 80 8 h);
+  --md-outline: lch(from var(--seed) 60 8 h);
+  --md-outline-variant: lch(from var(--seed) 28 8 h);
+
+  /* ── Type ── */
+  --font: 'Google Sans Flex', 'Segoe UI Variable Text', 'Segoe UI', sans-serif;
+  --font-small: var(--font);
+  --font-display: var(--font);
+
+  /* ── Surfaces ── */
+  --surface: var(--md-surface);
+  --surface-paint: var(--md-surface);
+  --surface-footer: var(--md-surface);
+  --card: var(--md-surface-container);
+  --card-hover: var(--md-surface-container-high);
+  --card-stroke: transparent;
+  --control: var(--md-surface-container-high);
+  --control-hover: var(--md-surface-container-highest);
+  --control-press: var(--md-surface-container);
+  --control-stroke: transparent;
+  --state-hover: color-mix(in srgb, var(--md-on-surface) 8%, transparent); /* M3 hover state layer */
+  --state-press: color-mix(in srgb, var(--md-on-surface) 12%, transparent);
+  --divider: var(--md-outline-variant);
+  --track: var(--md-secondary-container);
+  --flyout-border: color-mix(in srgb, var(--md-outline-variant) 70%, transparent);
+  --shadow-flyout: 0 24px 56px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --scroll-thumb: var(--md-outline-variant);
+  --focus-ring: var(--md-primary);
+
+  /* ── Text ── */
+  --text-1: var(--md-on-surface);
+  --text-2: var(--md-on-surface-variant);
+  --text-3: color-mix(in srgb, var(--md-on-surface-variant) 62%, transparent);
+
+  /* ── Colour roles ── */
+  --primary: var(--md-primary);
+  --on-primary: var(--md-on-primary);
+  --primary-text: var(--md-primary);
+  --tonal: var(--md-secondary-container);
+  --tonal-hover: color-mix(in srgb, var(--md-on-secondary-container) 8%, var(--md-secondary-container));
+  --on-tonal: var(--md-on-secondary-container);
+  --success: var(--md-tertiary); /* breaks use the tertiary (complementary) colour */
+  --critical: #ffb4ab;
+
+  /* ── Shape ── */
+  --r-tb: 20px;
+  --r-control: 12px;
+  --r-card: 16px;
+  --r-media: 28px;
+  --r-flyout: 28px;
+  --r-flyout-small: 24px;
+  --r-button: 999px;
+  --r-round: 50%;
+  --r-icon-btn: 50%;
+  --r-field: 999px;
+  --r-check: 2px;
+  --r-chip: 8px;
+  --r-seg: 999px;
+  --r-seg-item: 0;
+  --r-step: 50%;
+  --r-badge: 50%;
+  --r-mini-art: 8px;
+
+  /* ── Controls (M3 sizes) ── */
+  --btn-h: 40px;
+  --btn-fw: 500;
+  --icon-btn: 40px;
+  --field-h: 48px;
+  --field-pad: 20px;
+  --field: var(--md-surface-container-high);
+  --field-hover: var(--md-surface-container-highest);
+  --field-focus: var(--md-surface-container-highest);
+  --field-stroke: transparent;
+  --field-stroke-focus: var(--md-primary);
+  --field-line: transparent;
+  --field-line-focus-w: 0px;
+  --check-size: 18px;
+  --check-border: 2px;
+  --switch-w: 52px;
+  --switch-h: 32px;
+  --switch-border: 2px;
+  --switch-pad: 6px;
+  --switch-pad-on: 2px;
+  --switch-knob: 16px;
+  --switch-knob-on: 24px;
+  --switch-off-bg: var(--md-surface-container-highest);
+  --switch-off-stroke: var(--md-outline);
+  --switch-off-knob: var(--md-outline);
+  /* 2024 M3 slider: 16dp track, 4×44dp handle with a 6dp gap either side */
+  --slider-h: 44px;
+  --slider-track-h: 16px;
+  --slider-track-r: 8px;
+  --slider-thumb-w: 4px;
+  --slider-thumb-h: 44px;
+  --slider-thumb-r: 2px;
+  --slider-thumb-shadow: 0 0 0 6px var(--md-surface-container);
+  --chip: transparent;
+  --chip-hover: var(--state-hover);
+  --chip-stroke: var(--md-outline-variant);
+  --chip-on: var(--md-secondary-container);
+  --on-chip-on: var(--md-on-secondary-container);
+  --chip-on-stroke: transparent;
+  --seg-pad: 0;
+  --seg-h: 32px;
+  --seg-stroke: var(--md-outline);
+  --seg-bg: transparent;
+  --seg-on: var(--md-secondary-container);
+  --on-seg-on: var(--md-on-secondary-container);
+  --stack-gap: 3px;
+
+  /* ── Tabs: M3 primary tabs (icon + label, 3dp indicator as wide as the content) ── */
+  --tabs-pad: 4px 8px 0;
+  --tab-h: 60px;
+  --tab-gap: 4px;
+  --tab-fs: 13px;
+  --tab-fw: 500;
+  --tab-icon: 22px;
+  --tab-active: var(--md-primary);
+  --ind-h: 3px;
+  --ind-r: 3px 3px 0 0;
+  --ind-bottom: 0px;
+  --tab-hover-inset: 6px 4px 8px;
+  --r-tab-hover: 16px;
+
+  /* ── Menus: M3 menu (rounded, tonal selection with a check) ── */
+  --menu-bg: var(--md-surface-container);
+  --menu-pad: 6px;
+  --r-menu: 16px;
+  --menu-item-h: 44px;
+  --r-menu-item: 12px;
+
+  /* ── Focus dial: M3 circular indicator (thick, with a gap before the track).
+     The ring's inside is ~148px across: room for the time without touching. ── */
+  --dial-size: 178px;
+  --dial-stroke: 10;
+  --dial-track: var(--md-secondary-container);
+  --dial-cap: round;
+  --mode-chip-bg: var(--md-secondary-container);
+  --big-time-size: 42px;
+  --big-time-weight: 500;
+
+  /* ── Lists & badges ── */
+  --task-bg: var(--md-surface-container);
+  --task-hover: var(--md-surface-container-high);
+  --task-active-bg: var(--md-secondary-container);
+  --task-active-stroke: transparent;
+  --badge-bg: var(--md-primary-container);
+  --badge-text: var(--md-on-primary-container);
+
+  /* ── Motion: M3 emphasized easing ── */
+  --ease-out: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-in: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --ease-emph: cubic-bezier(0.2, 0, 0, 1);
+  --dur-slide: 400ms;
+}
+
+/* Taskbar accent: tone 80 on a dark taskbar, tone 40 on a light one. */
+[data-ui='material'][data-taskbar='dark'] {
+  --tb-accent: var(--md-primary);
+}
+
+[data-ui='material'][data-taskbar='light'] {
+  --tb-accent: lch(from var(--seed) 40 48 h);
+}
+
+/* Read by Shell.js: the indicator is as wide as the tab's label. */
+[data-ui='material'] .tabs {
+  --ind-size: content;
+}
+
+/* Read by timer.js: the gap (in SVG units) between the dial's arc and its
+   track. Round caps eat half the stroke on each side, so 16 leaves a clear
+   6-unit gap with a 10-unit stroke. */
+[data-ui='material'] .dial {
+  --dial-gap: 16;
+}
+
+/* Expressive shape morph: the Start button is a pill, and becomes a rounded
+   square while the timer runs. */
+[data-ui='material'] .timer.running .btn-hero {
+  border-radius: 16px;
+}
+
+[data-ui='material'] .btn-hero {
+  height: 56px;
+  min-width: 148px;
+  font-size: 16px;
+}
+
+[data-ui='material'] .btn-round {
+  width: 56px;
+  height: 56px;
+}
+
+[data-ui='material'] .mode-chip {
+  color: var(--md-on-secondary-container);
+}
+
+/* Segmented button: outlined pill, selected segment tonal with a check. */
+[data-ui='material'] .segmented {
+  overflow: hidden;
+}
+
+[data-ui='material'] .segmented button {
+  padding: 0 14px;
+}
+
+[data-ui='material'] .segmented button + button {
+  border-left: 1px solid var(--md-outline);
+}
+
+[data-ui='material'] .segmented button[aria-checked='true'] .seg-check {
+  display: block;
+}
+
+[data-ui='material'] .menu-item[aria-selected='true'] {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+[data-ui='material'] .menu-item[aria-selected='true'] .icon {
+  color: var(--md-on-secondary-container);
+}
+
+[data-ui='material'] .dropdown-btn {
+  height: 36px;
+  border-radius: 12px;
+}
+
+[data-ui='material'] .dropdown-btn.small {
+  height: 32px;
+  border-radius: 10px;
+}
+
+/* Grouped lists (Android 16): big corners outside, small corners between. */
+[data-ui='material'] .card-stack > *,
+[data-ui='material'] .task-list > * {
+  border-radius: 4px;
+}
+
+[data-ui='material'] .card-stack > :first-child,
+[data-ui='material'] .task-list > :first-child {
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+[data-ui='material'] .card-stack > :last-child,
+[data-ui='material'] .task-list > :last-child {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+[data-ui='material'] .row-card {
+  border: 0;
+}
+
+[data-ui='material'] .row-icon {
+  color: var(--md-on-surface-variant);
+}
+
+[data-ui='material'] .stepper {
+  border: 0;
+  border-radius: 20px;
+}
+
+[data-ui='material'] .row-card .field.number {
+  height: 40px;
+  padding: 0 16px;
+}
+
+[data-ui='material'] .step-btn {
+  width: 36px;
+  height: 36px;
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+[data-ui='material'] .shot-card,
+[data-ui='material'] .link-open {
+  border: 0;
+}
+
+[data-ui='material'] .link-open {
+  border-radius: 20px;
+}
+
+[data-ui='material'] .volume-card {
+  padding: 4px 18px 4px 8px;
+  border-radius: 20px;
+}
+
+/* Mini player: a tonal circle around play/pause */
+[data-ui='material'] .mini-play {
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tb-accent) 24%, transparent);
+  color: var(--tb-text-1);
+}
+
+[data-ui='material'] .mini-btn,
+[data-ui='material'] .mini-open,
+[data-ui='material'] .trigger-main {
+  border-radius: 20px;
+}
+
+/* ── Media card: Android System UI media player ───────────────────────────
+   ⓘ app                                        2 playing
+   Title                                            ┌────┐
+   Artist                                           │ ▶  │  (morphs ◻ ↔ ◯)
+   ⏮   0:42 ∿∿∿∿∿∿∿∿∿∿∿∿∿━━━━━━━━━━ 3:15   ⏭        └────┘     */
+[data-ui='material'] .media-card {
+  grid-template-columns: 40px 1fr 64px;
+  grid-template-areas:
+    'head head head'
+    'text text play'
+    'prev time next';
+  row-gap: 14px;
+  column-gap: 6px;
+  min-height: 188px;
+  padding: 18px 16px 14px 20px;
+  border: 0;
+  background: var(--md-surface-container-high);
+}
+
+[data-ui='material'] .mc-bg {
+  display: block;
+}
+
+[data-ui='material'] .mc-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Scrim tinted with the art's own colour (media.rs sends it as --art-color),
+   so text stays readable and the card takes on the album's mood. */
+[data-ui='material'] .mc-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--art-color, #000) 35%, #000) 0%,
+    color-mix(in oklab, var(--art-color, #000) 30%, rgba(0, 0, 0, 0.85)) 50%,
+    color-mix(in oklab, var(--art-color, #000) 25%, rgba(0, 0, 0, 0.45)) 100%
+  );
+}
+
+[data-ui='material'] .mc-thumb {
+  display: none;
+}
+
+[data-ui='material'] .mc-head {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+[data-ui='material'] .mc-app-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+[data-ui='material'] .mc-title {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+[data-ui='material'] .mc-artist {
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-ui='material'] .mc-play {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  transition: border-radius 350ms var(--ease-emph);
+}
+
+[data-ui='material'] .mc-play:hover {
+  background: color-mix(in srgb, var(--md-on-primary) 8%, var(--md-primary));
+}
+
+[data-ui='material'] .media-card.playing .mc-play {
+  border-radius: 28px;
+}
+
+[data-ui='material'] .mc-play .icon {
+  width: 24px;
+  height: 24px;
+}
+
+[data-ui='material'] .mc-prev,
+[data-ui='material'] .mc-next {
+  color: #ffffff;
+}
+
+[data-ui='material'] .mc-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Wavy progress: the played part is a sine wave (an SVG used as a mask)
+   that scrolls while playing; the rest is a flat track; a 4×16 handle sits
+   between them. When paused the wave flattens into a straight line. */
+[data-ui='material'] .mc-bar {
+  height: 16px;
+  border-radius: 0;
+  background: none;
+}
+
+[data-ui='material'] .mc-bar::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(var(--pct) + 6px);
+  right: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-50%);
+}
+
+[data-ui='material'] .mc-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--pct);
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--md-primary);
+  transform: translateX(-2px);
+}
+
+[data-ui='material'] .mc-bar-fill {
+  height: 16px;
+  border-radius: 0;
+  background: var(--md-primary);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='16' viewBox='0 0 24 16'%3E%3Cpath d='M0 8 Q6 2.5 12 8 T24 8' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E")
+    repeat-x 0 50% / 24px 16px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='16' viewBox='0 0 24 16'%3E%3Cpath d='M0 8 Q6 2.5 12 8 T24 8' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E")
+    repeat-x 0 50% / 24px 16px;
+  animation: mc-wave 1.1s linear infinite;
+  animation-play-state: paused;
+}
+
+[data-ui='material'] .media-card.playing .mc-bar-fill {
+  animation-play-state: running;
+}
+
+[data-ui='material'] .media-card:not(.playing) .mc-bar-fill {
+  height: 4px;
+  margin-top: 6px;
+  border-radius: 2px;
+  -webkit-mask: none;
+  mask: none;
+}
+
+@keyframes mc-wave {
+  to {
+    -webkit-mask-position: 24px 50%;
+    mask-position: 24px 50%;
+  }
+}
+
+/* Cards without album art fall back to a plain tonal card. */
+[data-ui='material'] .media-card.no-art .mc-head,
+[data-ui='material'] .media-card.no-art .mc-artist,
+[data-ui='material'] .media-card.no-art .mc-time {
+  color: var(--md-on-surface-variant);
+}
+
+[data-ui='material'] .media-card.no-art .mc-title,
+[data-ui='material'] .media-card.no-art .mc-prev,
+[data-ui='material'] .media-card.no-art .mc-next {
+  color: var(--md-on-surface);
+}
+
+[data-ui='material'] .media-card.no-art .mc-bar::before {
+  background: var(--md-secondary-container);
+}

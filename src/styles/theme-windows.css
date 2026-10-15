@@ -1,0 +1,253 @@
+/*
+ * theme-windows.css — Windows 11 (Fluent) look, in a deeper "premium" dark
+ * ============================================================================
+ * Fluent's shapes, controls and motion (4px controls, 8px overlays, the
+ * Windows slider/toggle/checkbox, the pill tab indicator) on near-black
+ * surfaces, darker than Windows' own #2c2c2c flyouts. Solid colours only,
+ * no blur. The accent is your Windows accent palette (--accent-*), set at
+ * startup by Shell.applyLook.
+ */
+
+/* Defaults for the accent palette (replaced with your real Windows accent). */
+:root {
+  --accent-light3: #99ebff;
+  --accent-light2: #4cc2ff;
+  --accent-light1: #0091f8;
+  --accent-base: #0078d4;
+  --accent-dark1: #0067c0;
+  --accent-dark2: #003e92;
+  --accent-dark3: #001a68;
+}
+
+[data-ui='windows'] {
+  color-scheme: dark;
+
+  /* ── Type: Segoe UI Variable, Windows 11's UI font ── */
+  --font: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-small: 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+
+  /* ── Surfaces ── */
+  --surface: #121212;
+  --surface-paint: linear-gradient(180deg, #191919 0, #121212 160px, #0e0e0e 100%);
+  --surface-footer: #0a0a0a;
+  --card: rgba(255, 255, 255, 0.035);
+  --card-hover: rgba(255, 255, 255, 0.06);
+  --card-stroke: rgba(255, 255, 255, 0.06);
+  --control: rgba(255, 255, 255, 0.055);
+  --control-hover: rgba(255, 255, 255, 0.085);
+  --control-press: rgba(255, 255, 255, 0.035);
+  --control-stroke: rgba(255, 255, 255, 0.07);
+  --state-hover: rgba(255, 255, 255, 0.06);
+  --state-press: rgba(255, 255, 255, 0.04);
+  --divider: rgba(255, 255, 255, 0.07);
+  --track: rgba(255, 255, 255, 0.22);
+  --flyout-border: rgba(255, 255, 255, 0.09);
+  --shadow-flyout: 0 24px 56px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --scroll-thumb: rgba(255, 255, 255, 0.35);
+  --focus-ring: #ffffff;
+
+  /* ── Text ── */
+  --text-1: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.7);
+  --text-3: rgba(255, 255, 255, 0.45);
+
+  /* ── Accent (Windows uses "Light 2" for fills in dark mode) ── */
+  --primary: var(--accent-light2);
+  --on-primary: #000000;
+  --primary-text: var(--accent-light3);
+  --tonal: rgba(255, 255, 255, 0.055);
+  --tonal-hover: rgba(255, 255, 255, 0.085);
+  --on-tonal: #ffffff;
+  --success: #6ccb5f;
+  --critical: #ff99a4;
+
+  /* ── Shape ── */
+  --r-tb: 4px;
+  --r-control: 4px;
+  --r-card: 6px;
+  --r-media: 8px;
+  --r-flyout: 8px;
+  --r-flyout-small: 8px;
+  --r-button: 4px;
+  --r-round: 6px;
+  --r-icon-btn: 4px;
+  --r-field: 4px;
+  --r-check: 4px;
+  --r-chip: 4px;
+  --r-seg: 6px;
+  --r-seg-item: 4px;
+  --r-step: 4px;
+  --r-badge: 4px;
+  --r-mini-art: 4px;
+
+  /* ── Controls ── */
+  --btn-h: 32px;
+  --btn-fw: 400;
+  --icon-btn: 32px;
+  --field-h: 32px;
+  --field-pad: 10px;
+  --field: rgba(255, 255, 255, 0.055);
+  --field-hover: rgba(255, 255, 255, 0.085);
+  --field-focus: #0b0b0b;
+  --field-stroke: rgba(255, 255, 255, 0.07);
+  --field-stroke-focus: rgba(255, 255, 255, 0.07);
+  --field-line: rgba(255, 255, 255, 0.45);
+  --field-line-focus-w: 2px;
+  --check-size: 20px;
+  --check-border: 1px;
+  --switch-w: 40px;
+  --switch-h: 20px;
+  --switch-border: 1px;
+  --switch-pad: 3px;
+  --switch-pad-on: 3px;
+  --switch-knob: 12px;
+  --switch-knob-on: 12px;
+  --switch-off-bg: transparent;
+  --switch-off-stroke: rgba(255, 255, 255, 0.6);
+  --switch-off-knob: rgba(255, 255, 255, 0.8);
+  --slider-h: 32px;
+  --slider-track-h: 4px;
+  --slider-track-r: 2px;
+  --slider-thumb-w: 20px;
+  --slider-thumb-h: 20px;
+  --slider-thumb-r: 50%;
+  --slider-thumb-shadow: inset 0 0 0 4px #3a3a3a, 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --slider-thumb-shadow-hover: inset 0 0 0 3px #3a3a3a, 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --slider-thumb-shadow-press: inset 0 0 0 5px #3a3a3a, 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --chip: rgba(255, 255, 255, 0.055);
+  --chip-hover: rgba(255, 255, 255, 0.085);
+  --chip-stroke: rgba(255, 255, 255, 0.07);
+  --chip-on: var(--accent-light2);
+  --on-chip-on: #000000;
+  --chip-on-stroke: transparent;
+  --seg-pad: 2px;
+  --seg-h: 26px;
+  --seg-stroke: rgba(255, 255, 255, 0.07);
+  --seg-bg: rgba(255, 255, 255, 0.03);
+  --seg-on: rgba(255, 255, 255, 0.1);
+  --on-seg-on: #ffffff;
+  --stack-gap: 2px;
+
+  /* ── Tabs: Fluent "SelectorBar", a short accent pill under the item ── */
+  --tabs-pad: 6px 8px 0;
+  --tab-h: 54px;
+  --tab-gap: 5px;
+  --tab-fs: 12px;
+  --tab-fw: 400;
+  --tab-icon: 18px;
+  --tab-active: #ffffff;
+  --ind-h: 3px;
+  --ind-r: 2px;
+  --ind-bottom: 0px;
+  --tab-hover-inset: 4px 3px 7px;
+  --r-tab-hover: 6px;
+
+  /* ── Menus: WinUI MenuFlyout / ComboBox popup ── */
+  --menu-bg: #1c1c1c;
+  --menu-pad: 4px;
+  --r-menu: 8px;
+  --menu-item-h: 32px;
+  --r-menu-item: 4px;
+
+  /* ── Focus dial: a Windows ProgressRing ── */
+  --dial-size: 172px;
+  --dial-stroke: 6;
+  --dial-track: rgba(255, 255, 255, 0.08);
+  --dial-cap: round;
+  --mode-chip-bg: color-mix(in srgb, var(--accent-light2) 14%, transparent);
+  --big-time-size: 46px;
+  --big-time-weight: 600;
+
+  /* ── Lists & badges ── */
+  --task-bg: transparent;
+  --task-hover: rgba(255, 255, 255, 0.045);
+  --task-active-bg: rgba(255, 255, 255, 0.05);
+  --task-active-stroke: rgba(255, 255, 255, 0.07);
+  --badge-bg: color-mix(in srgb, var(--accent-light2) 16%, transparent);
+  --badge-text: var(--accent-light3);
+
+  /* ── Motion: Fluent curves ── */
+  --ease-out: cubic-bezier(0, 0, 0, 1);
+  --ease-in: cubic-bezier(1, 0, 1, 1);
+  --ease-emph: cubic-bezier(0.1, 0.9, 0.2, 1);
+  --dur-slide: 300ms;
+}
+
+/* Read by Shell.js: the indicator is a fixed 16px pill. */
+[data-ui='windows'] .tabs {
+  --ind-size: 16;
+}
+
+[data-ui='windows'] .btn-primary {
+  border-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(0, 0, 0, 0.3);
+}
+
+[data-ui='windows'] .btn-primary:hover {
+  filter: none;
+  background: color-mix(in srgb, var(--primary) 90%, transparent);
+}
+
+[data-ui='windows'] .chip.on .icon {
+  display: none;
+}
+
+/* ComboBox list: the selected item gets a small accent pill on the left
+   (no check mark), like Windows 11's own dropdowns. */
+[data-ui='windows'] .menu-item .icon {
+  display: none;
+}
+
+[data-ui='windows'] .menu-item[aria-selected='true'] {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-ui='windows'] .menu-item[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--primary);
+  transform: translateY(-50%);
+}
+
+/* Selected task: accent bar on the left, like a selected navigation item. */
+[data-ui='windows'] .task.active {
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+[data-ui='windows'] .switch:hover::before {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Media card: Windows 11 Quick Settings layout ─────────────────────────
+   app ─────────────────────────────
+   title / artist              [art]
+   0:42 ━━━━━━━━━━━━━━━━━━━━━━━ 3:15
+              ⏮    ⏯    ⏭                                                  */
+[data-ui='windows'] .media-card {
+  grid-template-columns: 1fr 44px 44px 44px 1fr;
+  grid-template-areas:
+    'head head head head head'
+    'text text text text thumb'
+    'time time time time time'
+    '.    prev play next .';
+  row-gap: 10px;
+  padding: 14px 16px 10px;
+}
+
+[data-ui='windows'] .mc-thumb {
+  justify-self: end;
+}
+
+[data-ui='windows'] .mc-prev,
+[data-ui='windows'] .mc-play,
+[data-ui='windows'] .mc-next {
+  width: 44px;
+  height: 32px;
+}

@@ -1,0 +1,23 @@
+{
+  "name": "focuspot",
+  "productName": "Focus Pot",
+  "version": "1.0.0",
+  "description": "A taskbar companion for Windows 11 (Tauri): Pomodoro timer, tasks, media for every app, links and screenshots, in a Windows, Material or macOS Glass theme.",
+  "private": true,
+  "license": "MIT",
+  "author": "Shivansh Sharma",
+  "homepage": "https://github.com/Shivanshxsharma/focus-pot",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shivanshxsharma/focus-pot.git"
+  },
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "assets": "node scripts/fetch-assets.js",
+    "icon": "node scripts/make-icon.js"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.3"
+  }
+}

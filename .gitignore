@@ -1,0 +1,16 @@
+# Dependencies (recreated by `npm install` / start.bat)
+node_modules/
+
+# Packaged app output from `npm run pack`
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Personal notes that stay on this PC
+RESUME_NOTES.md
+
+# Rust build output
+src-tauri/target/
+src-tauri/gen/

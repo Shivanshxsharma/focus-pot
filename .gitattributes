@@ -1,0 +1,3 @@
+# Keep text files with LF in the repository; batch files need CRLF.
+* text=auto
+*.bat text eol=crlf

@@ -1,0 +1,1999 @@
+/*
+ * layout.css — structure and components, shared by both themes
+ * ============================================================================
+ * Everything here is written against SEMANTIC tokens (--surface, --primary,
+ * --r-card …). Each theme file only sets those tokens and adds the few
+ * details that make it look like Windows 11 or Material 3. That way the two
+ * themes can't drift apart structurally.
+ *
+ * Positions come from the backend (dock.rs) as variables (Shell.applyLayout):
+ *   --left            px from the window's left edge to the button/flyout
+ *   --trigger-h       height of the taskbar button
+ *   --trigger-bottom  px from the screen bottom to the button
+ *   --flyout-bottom   px from the screen bottom to the flyout
+ *
+ * Sections: 1 taskbar colours · 2 taskbar button · 3 mini player · 4 flyout
+ * 5 tabs · 6 pager · 7 controls · 8 focus · 9 tasks · 10 media · 11 links
+ * 12 screenshots · 13 settings (theme tiles) · 14 footer (brand)
+ */
+
+:root {
+  --left: 24px;
+  --trigger-h: 40px;
+  --trigger-bottom: 4px;
+  --flyout-bottom: 60px;
+}
+
+/* ── 1. Taskbar colours: follow the TASKBAR's light/dark mode ────────────── */
+[data-taskbar='dark'] {
+  --tb-text-1: #ffffff;
+  --tb-text-2: rgba(255, 255, 255, 0.72);
+  --tb-pill: rgba(255, 255, 255, 0.055);
+  --tb-pill-stroke: rgba(255, 255, 255, 0.09);
+  --tb-hover: rgba(255, 255, 255, 0.0605);
+  --tb-press: rgba(255, 255, 255, 0.0419);
+  --tb-stroke: rgba(255, 255, 255, 0.0698);
+  --tb-track: rgba(255, 255, 255, 0.16);
+  --tb-divider: rgba(255, 255, 255, 0.12);
+  --tb-accent: var(--accent-light2);
+}
+
+[data-taskbar='light'] {
+  --tb-text-1: rgba(0, 0, 0, 0.8956);
+  --tb-text-2: rgba(0, 0, 0, 0.6063);
+  --tb-pill: rgba(255, 255, 255, 0.55);
+  --tb-pill-stroke: rgba(0, 0, 0, 0.08);
+  --tb-hover: rgba(255, 255, 255, 0.7);
+  --tb-press: rgba(255, 255, 255, 0.5);
+  --tb-stroke: rgba(0, 0, 0, 0.0578);
+  --tb-track: rgba(0, 0, 0, 0.14);
+  --tb-divider: rgba(0, 0, 0, 0.12);
+  --tb-accent: var(--accent-dark1);
+}
+
+/* ── 2. Taskbar pill ──────────────────────────────────────────────────────── */
+/* A capsule sitting on the taskbar. It shows ONE face at a time, the timer
+   or the music player, and the › button on its right swaps them. */
+.trigger {
+  position: fixed;
+  left: var(--left);
+  bottom: var(--trigger-bottom);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--trigger-h);
+  padding: 4px;
+  overflow: hidden; /* the width animates when the face changes */
+  border: 1px solid var(--tb-pill-stroke);
+  border-radius: 999px;
+  background: var(--tb-pill);
+}
+
+.trigger[data-face='timer'] .face-media,
+.trigger[data-face='media'] .face-timer {
+  display: none;
+}
+
+/* The › swap button; it turns to point back when the music face shows. */
+.face-swap {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tb-text-2);
+  transition: background 150ms, color 150ms;
+}
+
+.face-swap:hover {
+  background: var(--tb-hover);
+  color: var(--tb-text-1);
+}
+
+.face-swap .icon {
+  transition: transform 300ms var(--ease-emph);
+}
+
+.trigger[data-face='media'] .face-swap .icon {
+  transform: rotate(180deg);
+}
+
+/* The timer face: highlight on hover, like a taskbar button. */
+.trigger-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+  max-width: 210px;
+  padding: 0 14px 0 2px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tb-text-1);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.trigger-main:hover,
+.trigger-main[aria-expanded='true'] {
+  background: var(--tb-hover);
+}
+
+.trigger-main:active {
+  background: var(--tb-press);
+}
+
+/* Icon inside a thin progress ring: the timer at a glance. */
+.trigger-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.trigger-ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.trigger-ring circle {
+  fill: none;
+  stroke-width: 2.25;
+}
+
+.trigger-ring-track {
+  stroke: var(--tb-track);
+}
+
+.trigger-ring-fill {
+  stroke: var(--tb-accent);
+  stroke-linecap: round;
+  stroke-dasharray: 87.96; /* 2πr for r = 14 */
+  stroke-dashoffset: 87.96;
+  transition: stroke-dashoffset 500ms linear;
+}
+
+.trigger[data-mode='break'] .trigger-ring-fill {
+  stroke: var(--success);
+}
+
+.trigger-badge .icon {
+  width: 15px;
+  height: 15px;
+  color: var(--tb-text-2);
+}
+
+.trigger[data-state='focus'] .trigger-badge .icon {
+  color: var(--tb-accent);
+}
+
+.trigger[data-state='break'] .trigger-badge .icon {
+  color: var(--success);
+}
+
+.trigger-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-family: var(--font-small);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.trigger-time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.trigger-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--tb-text-2);
+}
+
+/* No room on the taskbar: the pill floats above it, solid and dark. */
+body[data-dock='above'] .trigger {
+  --tb-text-1: var(--text-1);
+  --tb-text-2: var(--text-2);
+  --tb-hover: var(--state-hover);
+  --tb-press: var(--state-press);
+  --tb-stroke: transparent;
+  --tb-track: var(--track);
+  --tb-divider: var(--divider);
+  --tb-accent: var(--primary);
+  border-color: var(--flyout-border);
+  background: var(--surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes trigger-pulse {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: color-mix(in srgb, var(--tb-accent) 45%, transparent);
+  }
+}
+
+.trigger-main.pulse {
+  animation: trigger-pulse 700ms ease-in-out 3;
+}
+
+/* ── 3. The pill's music face ─────────────────────────────────────────────── */
+.mini {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+}
+
+.mini-open {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  max-width: 180px;
+  padding: 0 10px 0 2px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tb-text-1);
+  text-align: left;
+}
+
+.mini-open:hover {
+  background: var(--tb-hover);
+}
+
+.mini-art {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--r-mini-art);
+  background: var(--tb-hover);
+  color: var(--tb-text-2);
+}
+
+.mini-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-family: var(--font-small);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.mini-title,
+.mini-artist {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mini-title {
+  font-weight: 600;
+}
+
+.mini-artist {
+  color: var(--tb-text-2);
+}
+
+.mini-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-tb);
+  background: transparent;
+  color: var(--tb-text-1);
+}
+
+.mini-btn:hover {
+  background: var(--tb-hover);
+}
+
+.mini-btn:active {
+  background: var(--tb-press);
+}
+
+.mini-btn:disabled {
+  opacity: 0.35;
+  background: transparent;
+}
+
+/* ── 4. Flyout frame ──────────────────────────────────────────────────────── */
+.flyout {
+  position: fixed;
+  left: var(--left);
+  bottom: var(--flyout-bottom);
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  height: 584px;
+  max-height: calc(100vh - var(--flyout-bottom) - 16px);
+  overflow: hidden;
+  border: 1px solid var(--flyout-border);
+  border-radius: var(--r-flyout);
+  background: var(--surface-paint);
+  box-shadow: var(--shadow-flyout);
+
+  /* closed; .open plays a "slide up + fade in" entrance */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition:
+    opacity 120ms var(--ease-in),
+    transform 120ms var(--ease-in),
+    visibility 0s linear 120ms;
+}
+
+.flyout.open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 260ms var(--ease-out),
+    visibility 0s;
+}
+
+/* Only the macOS theme shows what's behind the panel (theme-mac.css). */
+.flyout-backdrop {
+  display: none;
+}
+
+/* ── 5. Tabs with a sliding indicator ─────────────────────────────────────── */
+.tabs {
+  position: relative;
+  display: flex;
+  flex: none;
+  padding: var(--tabs-pad);
+  border-bottom: 1px solid var(--divider);
+}
+
+.tab {
+  position: relative;
+  isolation: isolate; /* keeps the ::before highlight behind the icon/label */
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tab-gap);
+  min-width: 0;
+  height: var(--tab-h);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--tab-fs);
+  font-weight: var(--tab-fw);
+  line-height: 16px;
+  transition: color 150ms;
+}
+
+/* The hover highlight is a rounded shape inset inside the tab (not the
+   tab's square box), so it matches the rest of the rounded UI. */
+.tab::before {
+  content: '';
+  position: absolute;
+  inset: var(--tab-hover-inset);
+  z-index: -1;
+  border-radius: var(--r-tab-hover);
+  background: transparent;
+  transition: background 150ms;
+}
+
+.tab:hover {
+  color: var(--text-1);
+}
+
+.tab:hover::before {
+  background: var(--state-hover);
+}
+
+.tab:active::before {
+  background: var(--state-press);
+}
+
+.tab[aria-selected='true'] {
+  color: var(--tab-active);
+}
+
+.tab .icon {
+  width: var(--tab-icon);
+  height: var(--tab-icon);
+}
+
+/* Shell.js moves this under the selected tab (--ind-x, --ind-w). */
+.tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: var(--ind-bottom);
+  width: var(--ind-w, 16px);
+  height: var(--ind-h);
+  border-radius: var(--ind-r);
+  background: var(--primary);
+  transform: translateX(var(--ind-x, 0));
+  transition:
+    transform var(--dur-slide) var(--ease-emph),
+    width var(--dur-slide) var(--ease-emph);
+}
+
+/* ── 6. Pager: pages sit side by side and slide horizontally ─────────────── */
+.pager {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pager-track {
+  display: flex;
+  height: 100%;
+  transform: translateX(calc(var(--page-index, 0) * -100%));
+  transition: transform var(--dur-slide) var(--ease-emph);
+}
+
+.page {
+  flex: 0 0 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 12px 20px 20px;
+}
+
+/* ── 7. Controls ──────────────────────────────────────────────────────────── */
+.btn-primary,
+.btn-tonal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--btn-h);
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--r-button);
+  font-weight: var(--btn-fw);
+  white-space: nowrap;
+  transition:
+    background 150ms,
+    border-radius 300ms var(--ease-emph),
+    filter 150ms;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.btn-primary:active {
+  filter: brightness(0.92);
+}
+
+.btn-tonal {
+  border-color: var(--control-stroke);
+  background: var(--tonal);
+  color: var(--on-tonal);
+}
+
+.btn-tonal:hover {
+  background: var(--tonal-hover);
+}
+
+.btn-tonal:disabled,
+.btn-primary:disabled {
+  opacity: 0.5;
+}
+
+.btn-square {
+  width: var(--btn-h);
+  padding: 0;
+  flex: none;
+}
+
+/* Round tonal icon button (reset / skip beside the Start button) */
+.btn-round {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--control-stroke);
+  border-radius: var(--r-round);
+  background: var(--tonal);
+  color: var(--on-tonal);
+}
+
+.btn-round:hover {
+  background: var(--tonal-hover);
+}
+
+.btn-round .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Subtle icon-only button */
+.btn-icon {
+  display: inline-grid;
+  place-items: center;
+  width: var(--icon-btn);
+  height: var(--icon-btn);
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-icon-btn);
+  background: transparent;
+  color: var(--text-1);
+}
+
+.btn-icon:hover {
+  background: var(--state-hover);
+}
+
+.btn-icon:active {
+  background: var(--state-press);
+}
+
+.btn-icon:disabled {
+  opacity: 0.35;
+  background: transparent;
+}
+
+.btn-icon.on {
+  color: var(--primary);
+}
+
+/* Text box */
+.field {
+  width: 100%;
+  min-width: 0;
+  height: var(--field-h);
+  padding: 0 var(--field-pad);
+  border: 1px solid var(--field-stroke);
+  border-radius: var(--r-field);
+  background: var(--field);
+  color: var(--text-1);
+  box-shadow: inset 0 -1px 0 var(--field-line);
+}
+
+.field::placeholder {
+  color: var(--text-3);
+}
+
+.field:hover {
+  background: var(--field-hover);
+}
+
+.field:focus {
+  background: var(--field-focus);
+  border-color: var(--field-stroke-focus);
+  box-shadow: inset 0 calc(-1 * var(--field-line-focus-w)) 0 var(--primary);
+}
+
+.field.number {
+  width: 72px;
+  flex: none;
+  text-align: right;
+}
+
+.field.number::-webkit-inner-spin-button,
+.field.number::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-row .field.name {
+  flex: 0 0 34%;
+}
+
+/* Dropdown (ComboBox): a button that opens a themed menu (see dom.js) */
+.dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 32px;
+  min-width: 140px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--control-stroke);
+  border-radius: var(--r-control);
+  background: var(--control);
+  color: var(--text-1);
+  text-align: left;
+}
+
+.dropdown-btn:hover {
+  background: var(--control-hover);
+}
+
+.dropdown-btn[aria-expanded='true'] {
+  background: var(--control-press);
+}
+
+.dropdown-btn .icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-2);
+  transition: transform 200ms var(--ease-emph);
+}
+
+.dropdown-btn[aria-expanded='true'] .icon {
+  transform: rotate(180deg);
+}
+
+.dropdown-btn.small {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  font-size: 12px;
+}
+
+.shot-body .dropdown {
+  display: flex;
+}
+
+/* Open menus live in #popupLayer, above the flyout, so nothing clips them. */
+.popup-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.menu {
+  position: fixed;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: var(--menu-pad);
+  border: 1px solid var(--flyout-border);
+  border-radius: var(--r-menu);
+  background: var(--menu-bg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  animation: menu-in 160ms var(--ease-out);
+}
+
+.menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--menu-item-h);
+  padding: 0 14px 0 10px;
+  border-radius: var(--r-menu-item);
+  color: var(--text-1);
+  font-size: 13px;
+  white-space: nowrap;
+  outline: none;
+}
+
+.menu-item .icon {
+  width: 14px;
+  height: 14px;
+  visibility: hidden;
+  color: var(--primary);
+}
+
+.menu-item[aria-selected='true'] .icon {
+  visibility: visible;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--state-hover);
+}
+
+/* Checkbox */
+.check {
+  display: grid;
+  place-content: center;
+  width: var(--check-size);
+  height: var(--check-size);
+  flex: none;
+  margin: 0;
+  border: var(--check-border) solid var(--text-2);
+  border-radius: var(--r-check);
+  background: transparent;
+  appearance: none;
+}
+
+.check:hover {
+  background: var(--state-hover);
+}
+
+.check:checked {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.check:checked::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  border: 2px solid var(--on-primary);
+  border-top: 0;
+  border-right: 0;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+/* Toggle switch (an <input type="checkbox" class="switch">) */
+.switch {
+  position: relative;
+  flex: none;
+  width: var(--switch-w);
+  height: var(--switch-h);
+  margin: 0;
+  border: var(--switch-border) solid var(--switch-off-stroke);
+  border-radius: 999px;
+  background: var(--switch-off-bg);
+  appearance: none;
+  transition: background 150ms;
+}
+
+.switch::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: var(--switch-pad);
+  width: var(--switch-knob);
+  height: var(--switch-knob);
+  border-radius: 50%;
+  background: var(--switch-off-knob);
+  transform: translateY(-50%);
+  transition:
+    left 200ms var(--ease-emph),
+    width 150ms,
+    height 150ms,
+    background 150ms;
+}
+
+.switch:checked {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.switch:checked::before {
+  left: calc(100% - var(--switch-pad-on) - var(--switch-knob-on));
+  width: var(--switch-knob-on);
+  height: var(--switch-knob-on);
+  background: var(--on-primary);
+}
+
+/* Slider: the theme decides track/thumb sizes; --pct is set by JS. */
+.slider {
+  --pct: 0%;
+  flex: 1;
+  min-width: 0;
+  height: var(--slider-h);
+  margin: 0;
+  background: transparent;
+  appearance: none;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: var(--slider-track-h);
+  border-radius: var(--slider-track-r);
+  background: linear-gradient(to right, var(--primary) var(--pct), var(--track) var(--pct));
+}
+
+.slider::-webkit-slider-thumb {
+  width: var(--slider-thumb-w);
+  height: var(--slider-thumb-h);
+  margin-top: calc((var(--slider-track-h) - var(--slider-thumb-h)) / 2);
+  border-radius: var(--slider-thumb-r);
+  background: var(--primary);
+  box-shadow: var(--slider-thumb-shadow);
+  appearance: none;
+  transition: box-shadow 120ms var(--ease-out);
+}
+
+.slider:hover::-webkit-slider-thumb {
+  box-shadow: var(--slider-thumb-shadow-hover, var(--slider-thumb-shadow));
+}
+
+.slider:active::-webkit-slider-thumb {
+  box-shadow: var(--slider-thumb-shadow-press, var(--slider-thumb-shadow));
+}
+
+/* Chips (presets, gallery filters) */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--chip-stroke);
+  border-radius: var(--r-chip);
+  background: var(--chip);
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.chip:hover {
+  background: var(--chip-hover);
+}
+
+.chip .icon {
+  display: none;
+  width: 14px;
+  height: 14px;
+}
+
+.chip.on {
+  border-color: var(--chip-on-stroke);
+  background: var(--chip-on);
+  color: var(--on-chip-on);
+}
+
+.chip.on .icon {
+  display: block;
+}
+
+.chip small {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+/* Segmented control (theme picker) */
+.segmented {
+  display: flex;
+  flex: none;
+  padding: var(--seg-pad);
+  border: 1px solid var(--seg-stroke);
+  border-radius: var(--r-seg);
+  background: var(--seg-bg);
+}
+
+.segmented button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--seg-h);
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--r-seg-item);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.segmented button:hover {
+  color: var(--text-1);
+}
+
+.segmented button[aria-checked='true'] {
+  background: var(--seg-on);
+  color: var(--on-seg-on);
+}
+
+.segmented .seg-check {
+  display: none;
+  width: 14px;
+  height: 14px;
+}
+
+/* Cards and rows (settings-style) */
+.card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap);
+}
+
+.row-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 12px 8px 16px;
+  border: 1px solid var(--card-stroke);
+  border-radius: var(--r-card);
+  background: var(--card);
+  color: var(--text-1);
+}
+
+.row-icon {
+  color: var(--text-2);
+}
+
+.row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.row-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.section-title {
+  margin: 20px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.section-title.first {
+  margin-top: 4px;
+}
+
+.status {
+  min-height: 16px;
+  margin: 8px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.status:empty {
+  margin: 0;
+}
+
+.status.error {
+  color: var(--critical);
+}
+
+.summary {
+  margin: 10px 4px 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.summary:empty {
+  display: none;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+.empty-state .icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 8px;
+  stroke-width: 1.25;
+  color: var(--text-3);
+}
+
+.empty-state strong {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.empty-state span {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* ── 8. Focus tab ─────────────────────────────────────────────────────────── */
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dial {
+  position: relative;
+  width: var(--dial-size);
+  height: var(--dial-size);
+}
+
+.dial-ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.dial-ring circle {
+  fill: none;
+  stroke-width: var(--dial-stroke);
+}
+
+.dial-track {
+  stroke: var(--dial-track);
+}
+
+.dial-fill {
+  stroke: var(--primary);
+  stroke-linecap: var(--dial-cap);
+  transition: stroke-dasharray 500ms linear;
+}
+
+.timer[data-mode='break'] .dial-fill {
+  stroke: var(--success);
+}
+
+.dial-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--mode-chip-bg);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+
+.timer[data-mode='break'] .mode-chip {
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--success);
+}
+
+.big-time {
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-size: var(--big-time-size);
+  font-weight: var(--big-time-weight);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.dial-sub {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.focus-task {
+  max-width: 100%;
+  margin-top: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-2);
+}
+
+.focus-task strong {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.timer-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Tighter than other pages, so the whole Focus tab fits without scrolling. */
+.page[data-page='focus'] {
+  padding-bottom: 12px;
+}
+
+.page[data-page='focus'] .section-title {
+  margin-top: 14px;
+}
+
+.btn-hero {
+  min-width: 136px;
+  height: 48px;
+  font-size: 15px;
+}
+
+.btn-hero .icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Presets: four equal tiles, name above the minutes */
+.presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.chip.preset {
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  height: 44px;
+  padding: 0 4px;
+  line-height: 16px;
+}
+
+.chip.preset .icon {
+  display: none;
+}
+
+.steppers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 8px 8px 14px;
+  border: 1px solid var(--card-stroke);
+  border-radius: var(--r-card);
+  background: var(--card);
+}
+
+.stepper-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.stepper-label .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.stepper-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--control-stroke);
+  border-radius: var(--r-step);
+  background: var(--control);
+  color: var(--text-1);
+}
+
+.step-btn:hover {
+  background: var(--control-hover);
+}
+
+.step-btn:active {
+  background: var(--control-press);
+}
+
+.step-btn:disabled {
+  opacity: 0.35;
+}
+
+.step-value {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 9. Tasks tab ─────────────────────────────────────────────────────────── */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 4px 4px 4px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--r-card);
+  background: var(--task-bg);
+}
+
+.task:hover {
+  background: var(--task-hover);
+}
+
+.task.active {
+  border-color: var(--task-active-stroke);
+  background: var(--task-active-bg);
+}
+
+.task-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.task.done .task-text {
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+
+.task-pomos {
+  flex: none;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* Star and delete appear on hover, so the list stays calm; the active
+   task's star always shows. */
+.task .btn-icon {
+  opacity: 0;
+}
+
+.task:hover .btn-icon,
+.task:focus-within .btn-icon,
+.task .btn-icon.on {
+  opacity: 1;
+}
+
+.task .del:hover {
+  color: var(--critical);
+}
+
+/* ── 10. Media tab ────────────────────────────────────────────────────────── */
+.media-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* One card = one media session. Its parts are placed with grid areas, so
+   each theme can arrange them differently (see the theme files). */
+.media-card {
+  position: relative;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--card-stroke);
+  border-radius: var(--r-media);
+  background: var(--card);
+}
+
+.mc-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: none;
+}
+
+.mc-head {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.mc-app-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.mc-app-icon img {
+  width: 16px;
+  height: 16px;
+}
+
+.mc-app {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mc-text {
+  grid-area: text;
+  min-width: 0;
+}
+
+.mc-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 600;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.mc-artist {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-2);
+}
+
+.mc-thumb {
+  grid-area: thumb;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: var(--r-control);
+  background: var(--control);
+  color: var(--text-3);
+}
+
+.mc-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mc-time {
+  grid-area: time;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+
+/* The seek area is taller than the bar itself so it's easy to grab. */
+.mc-seek {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  height: 20px;
+  min-width: 0;
+  touch-action: none;
+}
+
+.media-card.seekable .mc-seek {
+  cursor: pointer;
+}
+
+.mc-bar {
+  --pct: 0%;
+  position: relative;
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--track);
+  transition: height 120ms;
+}
+
+/* Windows: the bar thickens and shows a thumb when you can seek.
+   (Material always shows its own handle; see theme-material.css.) */
+[data-ui='windows'] .media-card.seekable .mc-seek:hover .mc-bar,
+[data-ui='windows'] .media-card.dragging .mc-bar {
+  height: 5px;
+}
+
+[data-ui='windows'] .media-card.seekable .mc-seek:hover .mc-bar::after,
+[data-ui='windows'] .media-card.dragging .mc-bar::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: var(--pct);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 2px var(--surface);
+  transform: translate(-50%, -50%);
+}
+
+.mc-bar-fill {
+  width: var(--pct);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
+.mc-prev {
+  grid-area: prev;
+}
+
+.mc-play {
+  grid-area: play;
+}
+
+.mc-next {
+  grid-area: next;
+}
+
+.mc-prev,
+.mc-next,
+.mc-play {
+  justify-self: center;
+}
+
+.mc-play .icon,
+.mc-prev .icon,
+.mc-next .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.volume-card {
+  margin-top: 12px;
+  padding: 4px 16px 4px 8px;
+}
+
+.volume-value {
+  width: 28px;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+
+.volume-card + .row-card {
+  margin-top: var(--stack-gap);
+}
+
+/* ── 11. Links tab ────────────────────────────────────────────────────────── */
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.link-tile {
+  position: relative;
+  min-width: 0;
+}
+
+.link-open {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 56px;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--card-stroke);
+  border-radius: var(--r-card);
+  background: var(--card);
+  color: var(--text-1);
+  text-align: left;
+}
+
+.link-open:hover {
+  background: var(--card-hover);
+}
+
+.link-badge {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: var(--r-badge);
+  background: var(--badge-bg);
+  font-weight: 600;
+  color: var(--badge-text);
+}
+
+.link-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.link-name,
+.link-host {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.link-host {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.link-x {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
+.link-x .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.link-tile:hover .link-x,
+.link-x:focus-visible {
+  opacity: 1;
+}
+
+/* ── 12. Screenshots tab ──────────────────────────────────────────────────── */
+.shot-toolbar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 8px;
+}
+
+.shot-toolbar .btn-tonal {
+  padding: 0 8px;
+}
+
+/* Seven categories in two tidy rows; "Uncategorized" (always last) takes two cells. */
+#shotFilters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 12px 0;
+}
+
+#shotFilters .chip {
+  justify-content: center;
+  padding: 0 6px;
+}
+
+#shotFilters .chip:last-child {
+  grid-column: span 2;
+}
+
+.shot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.shot-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--card-stroke);
+  border-radius: var(--r-card);
+  background: var(--card);
+}
+
+.shot-thumb-btn {
+  display: block;
+  width: 100%;
+  height: 104px;
+  padding: 0;
+  border: 0;
+  background: var(--control);
+}
+
+.shot-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+.shot-thumb.loaded {
+  opacity: 1;
+}
+
+.shot-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px 8px;
+}
+
+.shot-name {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.shot-date {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-2);
+}
+
+.shot-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.shot-actions .btn-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.shot-actions .delete {
+  margin-left: auto;
+}
+
+.shot-actions .delete:hover {
+  color: var(--critical);
+}
+
+.shot-actions .delete.armed {
+  width: auto;
+  padding: 0 10px;
+  background: var(--critical);
+  color: #000;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── 13. Settings tab ─────────────────────────────────────────────────────── */
+.shortcuts .row-card {
+  min-height: 44px;
+}
+
+/* Theme picker: three tiles, each a tiny drawing of its theme. */
+.theme-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px 12px 10px 16px;
+}
+
+.theme-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-left: -4px;
+}
+
+.theme-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 4px 5px;
+  border: 0;
+  border-radius: calc(var(--r-card) + 4px);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.theme-tile:hover {
+  background: var(--state-hover);
+  color: var(--text-1);
+}
+
+.theme-tile[aria-checked='true'] {
+  color: var(--text-1);
+}
+
+.tile-art {
+  position: relative;
+  display: block;
+  height: 56px;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: box-shadow 150ms;
+}
+
+.theme-tile[aria-checked='true'] .tile-art {
+  box-shadow:
+    0 0 0 2px var(--primary),
+    0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.tile-art i {
+  position: absolute;
+  display: block;
+}
+
+/* macOS theme only: the Clear ↔ Tinted slider under the tiles. */
+.glass-look {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px 0 28px;
+}
+
+[data-ui='mac'] .glass-look {
+  display: flex;
+}
+
+.glass-look-name {
+  margin-right: 2px;
+}
+
+.glass-note {
+  display: none;
+  margin: -4px 4px 0 28px;
+}
+
+.glass-slider {
+  --slider-h: 24px;
+  --slider-track-h: 6px;
+  --slider-track-r: 3px;
+  --slider-thumb-w: 20px;
+  --slider-thumb-h: 20px;
+}
+
+/* Windows: near-black, square-ish, a short accent bar under a "tab". */
+.tile-windows {
+  background: #101010;
+}
+
+.tile-windows i:nth-child(1) {
+  inset: 8px 8px auto;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background: #1c1c1c;
+}
+
+.tile-windows i:nth-child(2) {
+  top: 34px;
+  left: 14px;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent-light2);
+}
+
+.tile-windows i:nth-child(3) {
+  right: 8px;
+  bottom: 7px;
+  width: 34px;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--accent-light2);
+}
+
+/* Material: tonal surfaces, pills and circles, from the same seed colour. */
+.tile-material {
+  background: lch(from var(--accent-base) 6 3 h);
+}
+
+.tile-material i:nth-child(1) {
+  inset: 8px 8px auto;
+  height: 24px;
+  border-radius: 12px;
+  background: lch(from var(--accent-base) 16 6 h);
+}
+
+.tile-material i:nth-child(2) {
+  top: 14px;
+  left: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: lch(from var(--accent-base) 80 48 h);
+}
+
+.tile-material i:nth-child(3) {
+  right: 8px;
+  bottom: 7px;
+  width: 38px;
+  height: 13px;
+  border-radius: 7px;
+  background: lch(from var(--accent-base) 80 48 h);
+}
+
+/* macOS: a frosted pane floating over a colourful wallpaper. */
+.tile-mac {
+  background:
+    radial-gradient(circle at 15% 20%, #ff8fb8 0, transparent 45%),
+    radial-gradient(circle at 85% 25%, #6f8cff 0, transparent 50%),
+    radial-gradient(circle at 55% 100%, #ffb057 0, transparent 55%),
+    #2b2452;
+}
+
+.tile-mac i:nth-child(1) {
+  inset: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.2),
+    0 4px 10px rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(5px) saturate(1.4);
+  backdrop-filter: blur(5px) saturate(1.4);
+}
+
+.tile-mac i:nth-child(2) {
+  top: 17px;
+  left: 20px;
+  width: 26px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.tile-mac i:nth-child(3) {
+  right: 20px;
+  bottom: 16px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--accent-light1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.keys {
+  display: flex;
+  gap: 4px;
+}
+
+/* About: the app icon, name and version, and a way to the project page. */
+.about-card {
+  gap: 14px;
+  padding: 12px 12px 12px 14px;
+}
+
+.app-tile {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  filter: drop-shadow(0 2px 6px rgba(196, 52, 40, 0.35));
+}
+
+.about-name {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.about {
+  margin: 14px 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--text-3);
+}
+
+/* ── 14. Footer: the brand, today's sessions, pin, quit ───────────────────── */
+/* The wordmark's font: Fraunces Italic (OFL), only the letters of
+   "Focus Pot", so the file is 2 KB. Same in every theme: it's the brand. */
+@font-face {
+  font-family: 'Focus Pot Brand';
+  font-style: italic;
+  font-weight: 600;
+  font-display: block;
+  src: url('../fonts/brand-fraunces.woff2') format('woff2');
+}
+
+.flyout-footer {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 52px;
+  padding: 0 10px 0 16px;
+  border-top: 1px solid var(--divider);
+  background: var(--surface-footer);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+/* The wordmark: Fraunces Italic, a touch of negative tracking. The mark's
+   colour (ember) is fixed in every theme: it's the brand, not the accent. */
+.brand-name,
+.about-name {
+  font-family: 'Focus Pot Brand', Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  color: var(--text-1);
+}
+
+.brand-name {
+  font-size: 17px;
+  line-height: 20px;
+}
+
+.footer-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  margin-right: 4px;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+  background: var(--state-hover);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.footer-stat .icon {
+  width: 14px;
+  height: 14px;
+  color: var(--primary);
+}
+
+.spacer {
+  flex: 1;
+}

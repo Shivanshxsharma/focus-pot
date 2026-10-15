@@ -1,0 +1,71 @@
+# Focus Pot — Rust backend (Tauri 2)
+#
+# Tauri uses the WebView2 that ships with Windows 11 instead of bundling a
+# whole Chromium (like Electron does), and the backend is native Rust instead
+# of Node.js. Media sessions, volume and screen capture are called directly
+# through the Windows APIs, so no helper process is needed.
+
+[package]
+name = "focuspot"
+version = "1.0.0"
+description = "Focus Pot: a taskbar companion for Windows 11 with a Pomodoro timer, tasks, media, links and screenshots"
+authors = ["Shivansh Sharma"]
+license = "MIT"
+repository = "https://github.com/Shivanshxsharma/focus-pot"
+edition = "2021"
+rust-version = "1.80"
+
+[lib]
+# Tauri convention: the app lives in a library; main.rs only calls run().
+name = "focuspot_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-global-shortcut = "2"  # Ctrl+Alt+… shortcuts that work in any app
+tauri-plugin-notification = "2"     # Windows toast notifications
+tauri-plugin-opener = "2"           # open links in the browser, files in their app
+tauri-plugin-single-instance = "2"  # a second launch just exits
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }  # thumbnails, album art, glass
+base64 = "0.22"                     # images travel to the UI as data: URLs
+chrono = "0.4"                      # local dates for screenshot folders
+xcap = "0.9"                        # screen capture
+arboard = "3"                       # clipboard images
+trash = "5"                         # delete = move to the Recycle Bin
+winreg = "0.55"                     # read theme / accent / taskbar settings
+
+[dependencies.windows]
+version = "0.58"
+features = [
+  "Foundation",
+  "Foundation_Collections",
+  "Media_Control",                  # GlobalSystemMediaTransportControlsSessionManager
+  "Storage_Streams",                # reading album art
+  "Win32_Foundation",
+  "Win32_Graphics_Gdi",             # monitors, icon bitmaps
+  "Win32_Media_Audio",              # system volume
+  "Win32_Media_Audio_Endpoints",
+  "Win32_Storage_FileSystem",       # app names from .exe version info
+  "Win32_System_Com",
+  "Win32_System_Com_StructuredStorage",
+  "Win32_System_Diagnostics_ToolHelp",
+  "Win32_System_Threading",
+  "Win32_System_Variant",
+  "Win32_UI_Accessibility",         # SetWinEventHook: notice when the taskbar is clicked
+  "Win32_UI_HiDpi",
+  "Win32_UI_Input_KeyboardAndMouse", # media keys, mouse buttons
+  "Win32_UI_Shell",                 # app icons
+  "Win32_UI_WindowsAndMessaging",
+]
+
+[profile.release]
+# Small, fast release build.
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true

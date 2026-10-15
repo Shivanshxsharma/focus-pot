@@ -1,0 +1,955 @@
+/*
+ * theme-mac.css — macOS "Liquid Glass" look (macOS Tahoe / iOS 27 style)
+ * ============================================================================
+ * Apple's rules for Liquid Glass, and how this theme follows them:
+ *
+ *   1. Glass is only for the FUNCTIONAL layer: things that float above
+ *      content. Here that is the taskbar pill, the panel it presents, and
+ *      the dropdown menus. Nothing else is glass.
+ *   2. Never glass on glass. Everything ON the panel (cards, rows, chips,
+ *      buttons, the tab picker) is a plain translucent fill, with no rims
+ *      or highlights, so it reads as part of the material.
+ *   3. Tint means "important", not decoration. Only the Start button gets
+ *      the accent as a background; elsewhere the accent marks status (the
+ *      selected tab, the timer ring, a ticked task, a switch that is on).
+ *   4. Text stays legible over anything: glass.js measures the brightest
+ *      part of what's behind the panel and darkens the glass just enough
+ *      for the secondary text to keep 4.5 : 1 (larger glass is more opaque).
+ *   5. Corners are concentric: an inner corner = the outer one minus the
+ *      gap between them (panel 36 → tab picker 26 → its thumb 23 → cards 20).
+ *   6. Quiet at rest, alive on touch: the panel grows out of the pill on a
+ *      spring, the tab thumb stretches like a drop as it moves, and the pill,
+ *      switches and sliders react to a press.
+ *   7. Windows' own settings are respected: Transparency effects off →
+ *      frostier glass; Contrast themes → borders and stronger text;
+ *      Animation effects off → calmer motion.
+ *
+ * The glass itself (back to front): .flyout-backdrop shows a blurred picture
+ * of what's behind (dock.rs + glass.js) bent at the edges like a lens
+ * (#liquidEdge); .flyout::after tints it and darkens the edge; .flyout::before
+ * draws the specular rim, brightest where light hits the top-left corner.
+ *
+ * Type: Inter (OFL), the closest open relative of Apple's SF Pro, with its
+ * optical sizes. Icons: Framework7 (MIT), drawn in the SF Symbols style.
+ */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: block;
+  src: url('../fonts/inter-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: block;
+  src: url('../fonts/inter-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* How opaque the glass is right now. Set by glass.js (adaptive tint + the
+   Clear ↔ Tinted setting); registered so changes glide instead of jumping. */
+@property --glass-alpha {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.6;
+}
+
+[data-ui='mac'] {
+  color-scheme: dark;
+
+  /* ── Type ── */
+  --font: 'Inter', 'Segoe UI Variable Text', system-ui, sans-serif;
+  --font-small: var(--font);
+  --font-display: var(--font);
+
+  /* ── The material ── */
+  --glass-tint: 22 22 26; /* RGB, used as rgb(var(--glass-tint) / alpha) */
+  --glass-edge-dark: rgba(0, 0, 0, 0.32); /* the darkened edge (iOS 27) */
+
+  /* ── Fills ON the glass: plain translucency, never a second glass ── */
+  --fill-1: rgba(255, 255, 255, 0.07); /* cards, grouped lists */
+  --fill-1-hover: rgba(255, 255, 255, 0.1);
+  --fill-2: rgba(255, 255, 255, 0.11); /* buttons, fields, chips */
+  --fill-2-hover: rgba(255, 255, 255, 0.16);
+  --fill-3: rgba(255, 255, 255, 0.2); /* selected: tab thumb, chosen chip */
+  --hairline: rgba(255, 255, 255, 0.1);
+
+  /* ── Surfaces (tokens used by layout.css) ── */
+  --surface: #1c1c20; /* only where something must be solid */
+  --surface-paint: transparent; /* the glass layers paint the panel */
+  --surface-footer: transparent;
+  --card: var(--fill-1);
+  --card-hover: var(--fill-1-hover);
+  --card-stroke: transparent;
+  --control: var(--fill-2);
+  --control-hover: var(--fill-2-hover);
+  --control-press: var(--fill-1);
+  --control-stroke: transparent;
+  --state-hover: rgba(255, 255, 255, 0.08);
+  --state-press: rgba(255, 255, 255, 0.05);
+  --divider: var(--hairline);
+  --track: rgba(255, 255, 255, 0.2);
+  --flyout-border: transparent; /* the rim is drawn by .flyout::before */
+  --shadow-flyout: 0 30px 70px rgba(0, 0, 0, 0.42), 0 8px 24px rgba(0, 0, 0, 0.24), 0 0 0 0.5px rgba(0, 0, 0, 0.6);
+  --scroll-thumb: rgba(255, 255, 255, 0.3);
+  --focus-ring: color-mix(in srgb, var(--primary) 80%, transparent);
+
+  /* ── Text. Apple measured secondary label colours on glass as low as
+     2.3 : 1, so hierarchy comes from size and weight, and the secondary
+     colour is kept strong (glass.js tunes the tint so it holds 4.5 : 1). ── */
+  --text-1: rgba(255, 255, 255, 0.96);
+  --text-2: rgba(255, 255, 255, 0.74);
+  --text-3: rgba(255, 255, 255, 0.5); /* placeholders and finished items only */
+
+  /* ── Accent: prominence and status only. White or black label, whichever reads. ── */
+  --primary: var(--accent-light1);
+  --on-primary: lch(from var(--primary) calc((68 - l) * 100) 0 h);
+  --primary-text: var(--accent-light2);
+  --tonal: var(--fill-2);
+  --tonal-hover: var(--fill-2-hover);
+  --on-tonal: var(--text-1);
+  --success: #30d158; /* systemGreen (dark) */
+  --critical: #ff453a; /* systemRed (dark) */
+
+  /* ── Shape: concentric. Panel 36; anything 16px inside it gets 20. ── */
+  --r-flyout: 36px;
+  --r-flyout-small: 30px;
+  --r-tb: 999px;
+  --r-control: 999px;
+  --r-card: 20px;
+  --r-media: 20px;
+  --r-button: 999px;
+  --r-round: 50%;
+  --r-icon-btn: 50%;
+  --r-field: 999px;
+  --r-check: 50%;
+  --r-chip: 999px;
+  --r-seg: 999px;
+  --r-seg-item: 999px;
+  --r-step: 50%;
+  --r-badge: 9px;
+  --r-mini-art: 6px;
+
+  /* ── Controls ── */
+  --btn-h: 34px;
+  --btn-fw: 600;
+  --icon-btn: 32px;
+  --field-h: 34px;
+  --field-pad: 14px;
+  --field: var(--fill-2);
+  --field-hover: var(--fill-2-hover);
+  --field-focus: var(--fill-2-hover);
+  --field-stroke: transparent;
+  --field-stroke-focus: transparent;
+  --field-line: transparent;
+  --field-line-focus-w: 0px;
+  --check-size: 20px;
+  --check-border: 1.5px;
+  --switch-w: 42px;
+  --switch-h: 26px;
+  --switch-border: 0px;
+  --switch-pad: 2px;
+  --switch-pad-on: 2px;
+  --switch-knob: 22px;
+  --switch-knob-on: 22px;
+  --switch-off-bg: rgba(120, 120, 128, 0.36);
+  --switch-off-stroke: transparent;
+  --switch-off-knob: #ffffff;
+  /* Control Center's volume slider: a thick capsule that fills with white */
+  --slider-h: 26px;
+  --slider-track-h: 24px;
+  --slider-track-r: 12px;
+  --slider-thumb-w: 24px;
+  --slider-thumb-h: 24px;
+  --slider-thumb-r: 50%;
+  --slider-thumb-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+  --chip: var(--fill-1);
+  --chip-hover: var(--fill-1-hover);
+  --chip-stroke: transparent;
+  --chip-on: var(--fill-3);
+  --on-chip-on: var(--text-1);
+  --chip-on-stroke: transparent;
+  --seg-pad: 2px;
+  --seg-h: 26px;
+  --seg-stroke: transparent;
+  --seg-bg: var(--fill-1);
+  --seg-on: var(--fill-3);
+  --on-seg-on: var(--text-1);
+  --stack-gap: 0px;
+
+  /* ── Tabs: a content-switching picker ON the panel, so fills, not glass ── */
+  --tabs-pad: 3px;
+  --tab-h: 46px;
+  --tab-gap: 3px;
+  --tab-fs: 11px;
+  --tab-fw: 500;
+  --tab-icon: 20px;
+  --tab-active: var(--text-1);
+  --ind-h: auto;
+  --ind-r: 999px;
+  --ind-bottom: 3px;
+  --tab-hover-inset: 0;
+  --r-tab-hover: 999px;
+
+  /* ── Menus: glass presentations, smaller and more opaque (lots of text) ── */
+  --menu-bg: rgb(34 34 40 / 0.78);
+  --menu-pad: 5px;
+  --r-menu: 16px;
+  --menu-item-h: 30px;
+  --r-menu-item: 11px; /* 16 - 5: concentric */
+
+  /* ── Focus dial: Apple's Clock timer (thin digits in a slim ring) ── */
+  --dial-size: 176px;
+  --dial-stroke: 7;
+  --dial-track: rgba(255, 255, 255, 0.12);
+  --dial-cap: round;
+  --mode-chip-bg: transparent;
+  --big-time-size: 46px;
+  --big-time-weight: 300;
+
+  /* ── Lists & badges ── */
+  --task-bg: transparent;
+  --task-hover: rgba(255, 255, 255, 0.05);
+  --task-active-bg: rgba(255, 255, 255, 0.08);
+  --task-active-stroke: transparent;
+  --badge-bg: var(--fill-2);
+  --badge-text: var(--text-1);
+
+  /* ── Motion: Apple-like springs ── */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emph: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1); /* a little overshoot */
+  --ease-present: cubic-bezier(0.2, 1.12, 0.32, 1); /* the panel growing out of the pill */
+  --dur-slide: 420ms;
+}
+
+[data-ui='mac'] body {
+  font-size: 13px;
+  letter-spacing: -0.003em;
+}
+
+/* ════════════════════════ The functional layer: glass ════════════════════════ */
+
+/* ── The panel ── */
+[data-ui='mac'] .flyout {
+  isolation: isolate;
+  border: 0;
+  background: transparent;
+  /* It grows out of the pill that presents it (glass.js sets the origin). */
+  transform-origin: var(--origin-x, 120px) var(--origin-y, 110%);
+  transform: scale(0.9);
+  transition:
+    transform 200ms var(--ease-in),
+    opacity 160ms var(--ease-in),
+    visibility 0s linear 200ms;
+}
+
+[data-ui='mac'] .flyout.open {
+  transform: none;
+  transition:
+    transform 520ms var(--ease-present),
+    opacity 140ms var(--ease-out),
+    visibility 0s;
+}
+
+/* What's behind the panel, blurred in Rust, bent at the edges like a lens. */
+[data-ui='mac'] .flyout-backdrop {
+  position: absolute;
+  inset: -24px; /* reaches past the edge, so the lens can bend in what's beyond it */
+  z-index: -2;
+  display: block;
+  background-color: #1e1e24; /* until the first picture arrives */
+  background-image: var(--glass-image, none);
+  background-repeat: no-repeat;
+  background-size: var(--glass-w, 100vw) var(--glass-h, 100vh);
+  background-position: var(--glass-x, 0) var(--glass-y, 0);
+  filter: url(#liquidEdge) saturate(1.8);
+}
+
+/* The tint (opacity from glass.js), a soft light from above, and the
+   darkened edge that gives the glass depth. */
+[data-ui='mac'] .flyout::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 55% at 18% 0%, rgba(255, 255, 255, 0.07), transparent 62%),
+    rgb(var(--glass-tint) / var(--glass-alpha));
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge-dark),
+    inset 0 0 18px rgba(0, 0, 0, 0.18);
+  transition: --glass-alpha 700ms var(--ease-out);
+  pointer-events: none;
+}
+
+/* The specular rim: light catching the edge, brightest at the top-left
+   corner, a second glint at the bottom-right, dim along the sides.
+   (0deg = 12 o'clock; this panel's corners sit at about ±36° and ±144°.) */
+[data-ui='mac'] .flyout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.34) 0deg,
+    rgba(255, 255, 255, 0.12) 40deg,
+    rgba(255, 255, 255, 0.06) 100deg,
+    rgba(255, 255, 255, 0.36) 144deg,
+    rgba(255, 255, 255, 0.06) 190deg,
+    rgba(255, 255, 255, 0.08) 260deg,
+    rgba(255, 255, 255, 0.85) 324deg,
+    rgba(255, 255, 255, 0.34) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── The taskbar pill: a small interactive glass capsule ── */
+[data-ui='mac'] .trigger {
+  border: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+    0 2px 8px rgba(0, 0, 0, 0.22);
+  transition: transform 460ms var(--ease-spring);
+}
+
+/* Alive on touch: the capsule swells a little while pressed… */
+[data-ui='mac'] .trigger:has(:active) {
+  transform: scale(1.035);
+  transition-duration: 160ms;
+}
+
+/* …and light gathers where you pressed (glass.js sets --px / --py). */
+[data-ui='mac'] .trigger::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(90px circle at var(--px, 50%) var(--py, 50%), rgba(255, 255, 255, 0.22), transparent 70%);
+  opacity: 0;
+  transition: opacity 600ms var(--ease-out);
+  pointer-events: none;
+}
+
+[data-ui='mac'] .trigger.touched::after {
+  opacity: 1;
+  transition-duration: 60ms;
+}
+
+[data-ui='mac'][data-taskbar='light'] .trigger {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.52));
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+[data-ui='mac'] body[data-dock='above'] .trigger {
+  background: rgb(30 30 34 / 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 0 0 0.5px rgba(0, 0, 0, 0.6),
+    0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+[data-ui='mac'] .trigger-time {
+  font-weight: 600;
+}
+
+/* Things ON the pill are plain, never a second glass. */
+[data-ui='mac'] .mini-play {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+[data-ui='mac'][data-taskbar='light'] .mini-play {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+[data-ui='mac'] .mini-btn,
+[data-ui='mac'] .mini-open,
+[data-ui='mac'] .trigger-main {
+  border-radius: 999px;
+}
+
+/* ── Dropdown menus: glass presented above the panel ── */
+[data-ui='mac'] .menu {
+  border: 0;
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 0 0 0.5px rgba(0, 0, 0, 0.6),
+    0 18px 44px rgba(0, 0, 0, 0.45);
+  transform-origin: top center;
+  animation: mac-menu-in 260ms var(--ease-spring);
+}
+
+@keyframes mac-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+[data-ui='mac'] .menu-item {
+  font-size: 13px;
+}
+
+/* macOS highlights the hovered menu item in the accent. */
+[data-ui='mac'] .menu-item:hover,
+[data-ui='mac'] .menu-item:focus-visible {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+[data-ui='mac'] .menu-item:hover .icon,
+[data-ui='mac'] .menu-item:focus-visible .icon {
+  color: inherit;
+}
+
+/* ════════════════════════ On the glass: fills only ════════════════════════ */
+
+/* ── The tab picker: a fill track; the selected thumb is a lighter fill
+   that stretches like a drop as it moves (Shell.moveIndicator). Concentric:
+   panel 36 → track inset 10 → 26 (a 52px capsule) → thumb inset 3 → 23. ── */
+[data-ui='mac'] .tabs {
+  --ind-size: tab; /* read by Shell.js: the thumb covers the whole tab */
+  --ind-motion: liquid;
+  margin: 10px 10px 4px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill-1);
+}
+
+[data-ui='mac'] .tab {
+  z-index: 1; /* above the thumb */
+  border-radius: 999px;
+  letter-spacing: 0;
+}
+
+[data-ui='mac'] .tab-indicator {
+  top: 3px;
+  bottom: 3px;
+  height: auto;
+  background: var(--fill-3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+  transition: none; /* Shell.js animates it (the "drop") */
+}
+
+/* The selected tab's icon in the accent: a status, which Apple allows. */
+[data-ui='mac'] .tab[aria-selected='true'] {
+  font-weight: 600;
+}
+
+[data-ui='mac'] .tab[aria-selected='true'] .icon {
+  color: var(--primary-text);
+}
+
+[data-ui='mac'] .page {
+  padding: 10px 16px 20px;
+}
+
+/* ── Buttons: one tinted primary action, everything else neutral ── */
+[data-ui='mac'] .btn-primary {
+  border: 0;
+  background: var(--primary);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-ui='mac'] .btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+[data-ui='mac'] .btn-tonal,
+[data-ui='mac'] .btn-round,
+[data-ui='mac'] .step-btn {
+  border: 0;
+  background: var(--fill-2);
+}
+
+[data-ui='mac'] .btn-tonal:hover,
+[data-ui='mac'] .btn-round:hover,
+[data-ui='mac'] .step-btn:hover {
+  background: var(--fill-2-hover);
+}
+
+[data-ui='mac'] .btn-primary:active,
+[data-ui='mac'] .btn-tonal:active,
+[data-ui='mac'] .btn-round:active,
+[data-ui='mac'] .step-btn:active {
+  transform: scale(0.96);
+}
+
+[data-ui='mac'] .btn-primary,
+[data-ui='mac'] .btn-tonal,
+[data-ui='mac'] .btn-round,
+[data-ui='mac'] .step-btn {
+  transition:
+    background 150ms,
+    filter 150ms,
+    transform 300ms var(--ease-spring);
+}
+
+/* A pinned panel: the pin shows its state in the accent. */
+[data-ui='mac'] .btn-icon.on {
+  color: var(--primary-text);
+}
+
+[data-ui='mac'] .field:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+[data-ui='mac'] .check {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Switches and sliders: the one place a control turns to glass is
+   while you hold it (Apple: "transient interactive elements"). ── */
+[data-ui='mac'] .switch::before {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+}
+
+[data-ui='mac'] .switch:checked::before {
+  background: #ffffff; /* iOS keeps the knob white */
+}
+
+[data-ui='mac'] .switch:active::before {
+  width: 30px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 0 0 0.5px rgba(255, 255, 255, 0.6),
+    0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-ui='mac'] .switch:checked:active::before {
+  left: calc(100% - var(--switch-pad-on) - 30px);
+}
+
+[data-ui='mac'] .slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.92) var(--pct), rgba(255, 255, 255, 0.14) var(--pct));
+}
+
+[data-ui='mac'] .slider::-webkit-slider-thumb {
+  background: #ffffff;
+  transition:
+    transform 300ms var(--ease-spring),
+    background 150ms,
+    box-shadow 150ms;
+}
+
+[data-ui='mac'] .slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 0 0 0.5px rgba(255, 255, 255, 0.7),
+    0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Chips: a chosen one is a brighter fill and bolder text (not a colour). */
+[data-ui='mac'] .chip.on {
+  font-weight: 600;
+}
+
+[data-ui='mac'] .chip.on .icon {
+  display: none;
+}
+
+[data-ui='mac'] .dropdown-btn {
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill-2);
+}
+
+[data-ui='mac'] .dropdown-btn:hover {
+  background: var(--fill-2-hover);
+}
+
+/* ── Inset grouped lists (System Settings): one rounded group, hairlines ── */
+[data-ui='mac'] .card-stack,
+[data-ui='mac'] .task-list {
+  overflow: hidden;
+  border-radius: var(--r-card);
+  background: var(--fill-1);
+}
+
+[data-ui='mac'] .task-list:empty {
+  display: none;
+}
+
+[data-ui='mac'] .card-stack > .row-card,
+[data-ui='mac'] .task-list > .task {
+  position: relative;
+  border-radius: 0;
+}
+
+[data-ui='mac'] .card-stack > .row-card {
+  background: transparent;
+}
+
+/* Hairline separators, inset past the icon like Apple's lists. */
+[data-ui='mac'] .card-stack > .row-card + .row-card::before,
+[data-ui='mac'] .task-list > .task + .task::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 44px;
+  right: 0;
+  height: 1px;
+  background: var(--hairline);
+}
+
+[data-ui='mac'] .task-list > .task + .task::before {
+  left: 48px;
+}
+
+[data-ui='mac'] .shortcuts > .row-card + .row-card::before {
+  left: 16px;
+}
+
+/* Icons in rows stay monochrome: colour is for meaning, not decoration. */
+[data-ui='mac'] .row-icon {
+  color: var(--text-2);
+}
+
+[data-ui='mac'] .section-title {
+  margin: 18px 4px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-2);
+}
+
+[data-ui='mac'] .section-title.first {
+  margin-top: 4px;
+}
+
+[data-ui='mac'] .summary {
+  color: var(--text-2);
+}
+
+[data-ui='mac'] kbd {
+  border: 0;
+  border-radius: 6px;
+  background: var(--fill-2);
+  color: var(--text-1);
+}
+
+/* Theme tiles inside a 20px card, 16px in: concentric → small corners. */
+[data-ui='mac'] .tile-art {
+  border-radius: 10px;
+}
+
+[data-ui='mac'] .theme-tile {
+  border-radius: 14px;
+}
+
+/* ── Focus tab ── */
+[data-ui='mac'] .mode-chip {
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+[data-ui='mac'] .timer[data-mode='break'] .mode-chip {
+  background: none;
+  color: var(--text-2);
+}
+
+[data-ui='mac'] .big-time {
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+[data-ui='mac'] .dial-sub {
+  color: var(--text-2);
+}
+
+[data-ui='mac'] .btn-hero {
+  min-width: 140px;
+  height: 46px;
+  font-size: 15px;
+}
+
+[data-ui='mac'] .btn-round {
+  width: 46px;
+  height: 46px;
+}
+
+[data-ui='mac'] .stepper-label {
+  color: var(--text-2);
+}
+
+/* ── Media: the Now Playing card (content: its colour comes from the art) ──
+   ┌────┐ Title                                   ⓘ
+   │art │ Artist
+   └────┘
+   0:42 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3:15
+                    ⏮     ⏯     ⏭                                            */
+[data-ui='mac'] .media-card {
+  grid-template-columns: 56px 1fr 44px 52px 44px 1fr 56px;
+  grid-template-areas:
+    'thumb text text text text text head'
+    'time  time time time time time time'
+    '.     .    prev play next .    .';
+  column-gap: 0;
+  row-gap: 12px;
+  padding: 14px 14px 10px;
+  border: 0;
+  background: var(--fill-1);
+}
+
+[data-ui='mac'] .mc-bg {
+  display: block;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+[data-ui='mac'] .mc-bg img {
+  position: absolute;
+  inset: -30%;
+  width: 160%;
+  height: 160%;
+  object-fit: cover;
+  filter: blur(26px) saturate(1.6);
+  opacity: 0.55;
+}
+
+/* A dimming layer under the controls keeps white glyphs readable over
+   bright artwork (Apple's guidance: about 35% black). */
+[data-ui='mac'] .mc-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.38));
+}
+
+/* 14px inside a 20px card: concentric gives ~6, kept at 8 to read as art. */
+[data-ui='mac'] .mc-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+[data-ui='mac'] .mc-text {
+  padding-left: 12px;
+}
+
+[data-ui='mac'] .mc-title {
+  font-size: 14px;
+  line-height: 19px;
+  -webkit-line-clamp: 1;
+}
+
+[data-ui='mac'] .mc-artist {
+  margin-top: 1px;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-2);
+}
+
+/* Only the app's icon in the corner; its name is in the tooltip. */
+[data-ui='mac'] .mc-head {
+  justify-self: end;
+  align-self: start;
+}
+
+[data-ui='mac'] .mc-app {
+  display: none;
+}
+
+[data-ui='mac'] .mc-app-icon {
+  width: 22px;
+  height: 22px;
+}
+
+[data-ui='mac'] .mc-time {
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+[data-ui='mac'] .mc-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.24);
+  transition: height 160ms var(--ease-out);
+}
+
+[data-ui='mac'] .mc-bar-fill {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* Apple's scrubber grows when you touch it. */
+[data-ui='mac'] .media-card.seekable .mc-seek:hover .mc-bar,
+[data-ui='mac'] .media-card.dragging .mc-bar {
+  height: 8px;
+}
+
+[data-ui='mac'] .mc-prev,
+[data-ui='mac'] .mc-next,
+[data-ui='mac'] .mc-play {
+  width: 44px;
+  height: 40px;
+  color: var(--text-1);
+}
+
+[data-ui='mac'] .mc-play .icon {
+  width: 26px;
+  height: 26px;
+}
+
+[data-ui='mac'] .mc-prev .icon,
+[data-ui='mac'] .mc-next .icon {
+  width: 22px;
+  height: 22px;
+}
+
+[data-ui='mac'] .volume-card {
+  padding: 6px 16px 6px 8px;
+}
+
+/* ── Links & screenshots (content) ── */
+[data-ui='mac'] .link-open,
+[data-ui='mac'] .shot-card {
+  border: 0;
+}
+
+[data-ui='mac'] .link-badge {
+  font-weight: 600;
+}
+
+/* 10px inside a 20px card → a 10px corner. */
+[data-ui='mac'] .shot-body .dropdown-btn {
+  border-radius: 10px;
+}
+
+/* ── Footer ── */
+[data-ui='mac'] .flyout-footer {
+  border-top-color: var(--hairline);
+}
+
+[data-ui='mac'] .footer-stat {
+  background: var(--fill-1);
+}
+
+[data-ui='mac'] .footer-stat .icon {
+  color: var(--text-2);
+}
+
+/* Overlay-style scrollbars: invisible until the pointer is over the list. */
+[data-ui='mac'] ::-webkit-scrollbar {
+  width: 9px;
+}
+
+[data-ui='mac'] ::-webkit-scrollbar-thumb {
+  border-width: 2px;
+  border-radius: 5px;
+  background-color: transparent;
+}
+
+[data-ui='mac'] :hover::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb);
+}
+
+/* ════════════════════════ Windows accessibility settings ════════════════════════ */
+
+/* Transparency effects off: frostier, not gone. More blur here; glass.js
+   raises the tint to at least 0.78. */
+@media (prefers-reduced-transparency: reduce) {
+  [data-ui='mac'] .flyout-backdrop {
+    filter: url(#liquidEdge) saturate(1.5) blur(8px);
+  }
+
+  [data-ui='mac'] .glass-note {
+    display: block;
+  }
+
+  [data-ui='mac'] .menu {
+    background: rgb(34 34 40 / 0.97);
+  }
+
+  [data-ui='mac'] .trigger {
+    background: rgb(44 44 50 / 0.92);
+  }
+}
+
+/* Contrast themes / more contrast: stronger text and visible control edges. */
+@media (prefers-contrast: more) {
+  [data-ui='mac'] {
+    --text-2: rgba(255, 255, 255, 0.92);
+    --text-3: rgba(255, 255, 255, 0.78);
+    --hairline: rgba(255, 255, 255, 0.4);
+  }
+
+  [data-ui='mac'] .flyout::after {
+    background: rgb(var(--glass-tint) / 0.94);
+  }
+
+  [data-ui='mac'] :is(.card-stack, .task-list, .row-card, .media-card, .stepper, .link-open, .shot-card, .btn-tonal, .btn-round, .step-btn, .chip, .field, .dropdown-btn, .tabs, .footer-stat) {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Animation effects off: calmer, not frozen. No springs or swelling; the
+   panel simply fades in place. */
+@media (prefers-reduced-motion: reduce) {
+  [data-ui='mac'] .flyout,
+  [data-ui='mac'] .flyout.open {
+    transform: none;
+    transition:
+      opacity 160ms ease,
+      visibility 0s linear 160ms;
+  }
+
+  [data-ui='mac'] .flyout.open {
+    transition:
+      opacity 160ms ease,
+      visibility 0s;
+  }
+
+  [data-ui='mac'] .trigger:has(:active),
+  [data-ui='mac'] :is(.btn-primary, .btn-tonal, .btn-round, .step-btn):active,
+  [data-ui='mac'] .slider:active::-webkit-slider-thumb {
+    transform: none;
+  }
+
+  [data-ui='mac'] .trigger::after {
+    display: none; /* no light flashes */
+  }
+
+  [data-ui='mac'] .menu {
+    animation-name: menu-in;
+  }
+}
