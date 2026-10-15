@@ -1586,6 +1586,118 @@ body[data-dock='above'] .trigger {
 }
 
 /* Seven categories in two tidy rows; "Uncategorized" (always last) takes two cells. */
+/* Screenshots | Clipboard: one switch, two equal halves. */
+.view-switch {
+  margin-bottom: 12px;
+}
+
+.view-switch button {
+  flex: 1;
+  justify-content: center;
+  gap: 6px;
+}
+
+.view-switch .icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Clipboard history: one card per copy; the wide left part copies it again. */
+.clip-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  margin: 10px 4px 6px;
+}
+
+.clip-bar .summary {
+  margin: 0;
+}
+
+.clip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clip-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 6px 6px 6px;
+  border: 1px solid var(--card-stroke);
+  border-radius: var(--r-card);
+  background: var(--card);
+}
+
+.clip-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: max(4px, calc(var(--r-card) - 4px)); /* concentric with the card */
+  background: transparent;
+  color: var(--text-1);
+  text-align: left;
+}
+
+.clip-main:hover {
+  background: var(--state-hover);
+}
+
+.clip-main.is-image {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.clip-snippet {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.clip-thumb {
+  width: 88px;
+  height: 56px;
+  border-radius: max(4px, calc(var(--r-card) - 10px));
+  background: var(--control);
+  object-fit: cover;
+}
+
+.clip-meta {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-2);
+}
+
+.clip-actions {
+  display: flex;
+  flex: none;
+  gap: 2px;
+}
+
+.clip-actions .btn-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.btn-tonal.small {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
 #shotFilters {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1904,7 +2016,7 @@ body[data-dock='above'] .trigger {
   width: 40px;
   height: 40px;
   flex: none;
-  filter: drop-shadow(0 2px 6px rgba(196, 52, 40, 0.35));
+  filter: drop-shadow(0 2px 8px rgba(255, 178, 56, 0.22));
 }
 
 .about-name {
@@ -1956,7 +2068,7 @@ body[data-dock='above'] .trigger {
 }
 
 /* The wordmark: Fraunces Italic, a touch of negative tracking. The mark's
-   colour (ember) is fixed in every theme: it's the brand, not the accent. */
+   colour (amber) is fixed in every theme: it's the brand, not the accent. */
 .brand-name,
 .about-name {
   font-family: 'Focus Pot Brand', Georgia, serif;

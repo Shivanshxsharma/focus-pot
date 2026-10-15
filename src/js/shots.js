@@ -1,8 +1,10 @@
 /**
- * shots.js — screenshot tools and gallery
+ * shots.js — the Shots tab: screenshot tools and gallery
  * ============================================================================
  * The heavy lifting (capturing, saving, thumbnails, the Recycle Bin) happens
- * in src/main/screenshots.js. This file draws the page and calls it.
+ * in the backend (src-tauri/src/screenshots.rs). This file draws the page
+ * and calls it. A switch at the top flips between this gallery and the
+ * clipboard history (clips.js).
  */
 
 'use strict';
@@ -10,6 +12,8 @@
 const Shots = (() => {
   let el = null;
   let filter = 'All';
+  let view = 'shots'; // 'shots' | 'clips'
+  let showing = false; // is the Shots tab on screen?
   let renderId = 0; // increases on every refresh; an older refresh stops when it sees a newer id
 
   // Why: filter chips are rebuilt each refresh so the selected one is always right.
@@ -144,10 +148,21 @@ const Shots = (() => {
     });
   }
 
-  // Why: Ctrl+Alt+S / Ctrl+Alt+V run in main; it tells us so we can refresh.
+  // Why: Ctrl+Alt+S / Ctrl+Alt+V run in the backend; it tells us so we can refresh.
   function onExternalChange(result) {
     if (result && result.message) setStatus(el.status, result.message, !result.ok);
     if (Shell.isOpen() && Shell.page() === 'shots') refresh();
+  }
+
+  // Why: one switch shows either the gallery or the clipboard history, and
+  // tells clips.js when its list is on screen (so it only redraws then).
+  function setView(next) {
+    view = next === 'clips' ? 'clips' : 'shots';
+    for (const button of el.viewButtons) button.setAttribute('aria-checked', String(button.dataset.shotsView === view));
+    el.shotsPane.hidden = view !== 'shots';
+    el.clipsPane.hidden = view !== 'clips';
+    Clips.setVisible(showing && view === 'clips');
+    if (showing && view === 'shots') refresh();
   }
 
   function init() {
@@ -158,20 +173,28 @@ const Shots = (() => {
       empty: $('shotEmpty'),
       emptyTitle: $('shotEmptyTitle'),
       emptyText: $('shotEmptyText'),
+      viewButtons: document.querySelectorAll('[data-shots-view]'),
+      shotsPane: $('shotsPane'),
+      clipsPane: $('clipsPane'),
     };
+    for (const button of el.viewButtons) button.addEventListener('click', () => setView(button.dataset.shotsView));
     bindAction($('shotCapture'), () => window.nb.shots.capture());
     bindAction($('shotPaste'), () => window.nb.shots.paste());
     bindAction($('shotImport'), () => window.nb.shots.importWindows());
     bindAction($('shotFolder'), () => window.nb.shots.openFolder());
 
-    // Refresh whenever the Shots tab comes into view.
-    let wasShowing = false;
+    // Refresh whichever view is chosen whenever the Shots tab comes into view.
     Shell.onChange(({ open, page }) => {
-      const showing = open && page === 'shots';
-      if (showing && !wasShowing) refresh();
-      wasShowing = showing;
+      const now = open && page === 'shots';
+      if (now === showing) return;
+      showing = now;
+      if (view === 'shots') {
+        if (showing) refresh();
+      } else {
+        Clips.setVisible(showing);
+      }
     });
   }
 
-  return { init, refresh, onExternalChange };
+  return { init, refresh, onExternalChange, setView };
 })();

@@ -70,6 +70,15 @@ function formatDuration(seconds) {
   return hours ? `${hours}:${pad2(mins)}:${pad2(s % 60)}` : `${mins}:${pad2(s % 60)}`;
 }
 
+// Why: clipboard items read "just now", "5 min ago", "2 h ago", "yesterday".
+function timeAgo(ms) {
+  const seconds = Math.max(0, (Date.now() - Number(ms)) / 1000);
+  if (seconds < 45) return 'just now';
+  if (seconds < 3600) return `${Math.max(1, Math.round(seconds / 60))} min ago`;
+  if (seconds < 86400) return `${Math.round(seconds / 3600)} h ago`;
+  return seconds < 172800 ? 'yesterday' : `${Math.round(seconds / 86400)} days ago`;
+}
+
 // Why: local calendar date as yyyy-mm-dd, used to reset "sessions today".
 function todayKey() {
   const d = new Date();

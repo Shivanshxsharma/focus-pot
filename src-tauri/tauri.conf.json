@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Focus Pot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "identifier": "com.focuspot.app",
   "build": {
     "frontendDist": "../src"
@@ -40,8 +40,8 @@
     "license": "MIT",
     "homepage": "https://github.com/Shivanshxsharma/focus-pot",
     "category": "Productivity",
-    "shortDescription": "Focus Pot: Pomodoro, tasks, music and screenshots on your Windows taskbar",
-    "longDescription": "A small, premium companion on the left end of the Windows 11 taskbar: a Pomodoro timer, a task list, controls for every media app, quick links and a screenshot organizer, in a Windows, Material or macOS Liquid Glass look.",
+    "shortDescription": "Focus Pot: Pomodoro, tasks, music, clipboard and screenshots on your Windows taskbar",
+    "longDescription": "A small, premium companion on the left end of the Windows 11 taskbar: a Pomodoro timer, a task list, controls for every media app, a clipboard history, quick links and a screenshot organizer, in a Windows, Material or macOS Liquid Glass look.",
     "windows": {
       "nsis": {
         "installMode": "currentUser",

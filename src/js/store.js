@@ -11,7 +11,7 @@ const Store = (() => {
   const data = {
     tasks: [], // { id, text, done, active, pomos, createdAt }
     links: [], // { id, name, url }
-    settings: { focusMin: 25, breakMin: 5, remindMin: 15, dock: 'auto', dockOffset: 12, theme: 'windows', miniPlayer: true, pillFace: 'timer', glassTint: 40 },
+    settings: { focusMin: 25, breakMin: 5, remindMin: 15, dock: 'auto', dockOffset: 12, theme: 'windows', miniPlayer: true, pillFace: 'timer', glassTint: 40, clipHistory: false },
     stats: { date: '', pomos: 0 }, // focus sessions finished today
   };
   let categories = ['Uncategorized'];

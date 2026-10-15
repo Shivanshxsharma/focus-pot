@@ -42,6 +42,7 @@ focus-pot/
 │     │                      staying above the taskbar, the glass backdrop snapshot
 │     ├─ media.rs            Media sessions (WinRT), album art, app icons, volume, media keys
 │     ├─ screenshots.rs      Save, paste, import, gallery, Recycle Bin
+│     ├─ clipboard.rs        Clipboard history (in memory only, off by default)
 │     ├─ shortcuts.rs        Global keyboard shortcuts
 │     └─ commands.rs         The complete list of things the page may ask for
 └─ src/                      ── the front end: a web page in WebView2 ──
@@ -63,7 +64,8 @@ focus-pot/
       ├─ tasks.js            To-do list
       ├─ media.js            Music pill, media cards, seeking, volume
       ├─ links.js            Web shortcuts
-      ├─ shots.js            Screenshot tab
+      ├─ shots.js            Shots tab: screenshot gallery + the Screenshots | Clipboard switch
+      ├─ clips.js            Shots tab: the clipboard history
       ├─ settings.js         Settings tab
       └─ app.js              Startup
 ```
@@ -128,6 +130,13 @@ focus-pot/
 - The timer stores the moment the phase ends and recomputes from `Date.now()` every 500 ms, so it never drifts.
 - The dial and the pill's ring are SVG circles drawn with `stroke-dasharray`. In Material the arc and the track are separated by a small gap, like Material 3's progress indicators.
 - Presets and steppers change the lengths instantly; a running timer is never touched.
+
+**Clipboard history.**
+- Windows bumps a counter (`GetClipboardSequenceNumber`) every time anything is copied, so `clipboard.rs` checks it a few times a second: practically free.
+- On a change it reads the text (or, if there's none, the image) with `arboard`. Images are kept as PNG plus a small JPEG thumbnail for the page; the page only ever gets previews.
+- Password managers mark what they copy so clipboard tools look away (`ExcludeClipboardContentFromMonitorProcessing`, `CanIncludeInClipboardHistory`, `Clipboard Viewer Ignore`); such copies are never recorded, the same rule Windows' own history follows.
+- It's off by default and in memory only: turning it off or quitting forgets everything. The newest 30 copies are kept, at most 10 of them images.
+- Copying the same thing again moves it to the top instead of adding a twin; "copy again" puts it back on the clipboard; an image can be saved into Shots like a pasted snip.
 
 **Tasks, links, screenshots.**
 - Only one task can be active (★), and finishing a task clears it.

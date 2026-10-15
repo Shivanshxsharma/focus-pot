@@ -6,8 +6,8 @@
  * This script draws it in code and writes
  *
  *   src-tauri/icons/32x32.png, 128x128.png, 128x128@2x.png, icon.png, icon.ico
- *       the app icon: a warm-white mark on an ember tile, with a soft light
- *       from the top-left, a bright inner rim and a faint shadow under the mark
+ *       the app icon: an amber mark on a black tile, with a soft light from
+ *       the top-left, a faint amber glow behind the mark and a thin bright rim
  *   src-tauri/icons/installer-sidebar.bmp (164×314), installer-header.bmp (150×57)
  *       the artwork the Windows installer shows (NSIS wants BMP files)
  *
@@ -27,13 +27,14 @@ const zlib = require('zlib');
 
 const OUT = path.join(__dirname, '..', 'src-tauri', 'icons');
 
-// ── Brand colours (the in-app mark uses the same, see .brand-mark in layout.css) ──
-const EMBER_LIGHT = [255, 160, 96];
-const EMBER = [236, 92, 52];
-const EMBER_DEEP = [196, 52, 40];
-const GLYPH = [255, 251, 246]; // warm white
-const NIGHT_TOP = [24, 22, 26];
-const NIGHT_BOTTOM = [12, 11, 14];
+// ── Brand colours (the in-app mark uses the same: #brandAmber in index.html) ──
+const AMBER_LIGHT = [255, 216, 138]; // #ffd88a, the top of the mark
+const AMBER = [255, 178, 56]; // #ffb238
+const AMBER_DEEP = [236, 128, 20]; // #ec8014, the bottom of the pot
+const TILE_TOP = [32, 31, 34]; // the black tile, lit a little at the top-left
+const TILE_BOTTOM = [6, 6, 8];
+const NIGHT_TOP = [22, 21, 24];
+const NIGHT_BOTTOM = [9, 9, 11];
 
 // ── Shapes ──
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -96,7 +97,7 @@ function sdMark(x, y) {
   );
 }
 
-// ── The app icon: the mark on an ember tile ──
+// ── The app icon: the amber mark on a black tile ──
 // Small sizes get a bigger mark so it stays readable in a 16px tray.
 function drawIcon(size) {
   const px = Buffer.alloc(size * size * 4);
@@ -108,20 +109,25 @@ function drawIcon(size) {
       const gy = ((y + 0.5) / size) * 256;
       const dTile = sdRoundRect(gx, gy, 0, 0, 256, 256, 58);
 
-      // Diagonal three-stop gradient: light top-left, deep bottom-right.
-      const t = clamp01((gx * 0.45 + gy) / 330);
-      let c = t < 0.55 ? lerp(EMBER_LIGHT, EMBER, t / 0.55) : lerp(EMBER, EMBER_DEEP, (t - 0.55) / 0.45);
-      // A soft light from the top-left and a bright inner rim along the top.
-      c = lerp(c, [255, 255, 255], clamp01(1 - Math.hypot(gx - 70, gy - 10) / 210) * 0.16);
-      const rim = clamp01(1 - Math.abs(dTile + 2.2) / 2.2) * clamp01((128 - gy) / 128);
-      c = lerp(c, [255, 255, 255], rim * 0.35);
+      // Black, a touch lighter at the top-left, with a soft light there too.
+      let c = lerp(TILE_TOP, TILE_BOTTOM, clamp01((gx * 0.45 + gy) / 330));
+      c = lerp(c, [255, 255, 255], clamp01(1 - Math.hypot(gx - 70, gy - 10) / 210) * 0.07);
+      // A faint amber glow behind the mark, as if it lit the tile.
+      const glow = clamp01(1 - Math.hypot(gx - 128, gy - 136) / 118);
+      c = lerp(c, AMBER, glow * glow * 0.13);
+      // A thin bright rim: brightest along the top, faint all round, so the
+      // tile still has an edge on a black taskbar.
+      const rim = clamp01(1 - Math.abs(dTile + 1.6) / 1.6);
+      c = lerp(c, [255, 255, 255], rim * (0.07 + 0.2 * clamp01((128 - gy) / 128)));
 
-      // The mark, with a faint shadow just below it for depth.
+      // The mark: amber, lightest at the leaf, deepest at the bottom of the pot.
       const mx = (gx - 128) / K + 12;
       const my = (gy - 128) / K + 12;
-      const shadow = clamp01(0.5 - (sdMark(mx, my - 0.55) - 0.15) * K * unit * 0.6) * 0.22;
-      c = lerp(c, [90, 20, 10], shadow);
-      c = lerp(c, GLYPH, clamp01(0.5 - sdMark(mx, my) * K * unit));
+      const shade = clamp01((my - 3) / 18);
+      const amber = shade < 0.5 ? lerp(AMBER_LIGHT, AMBER, shade / 0.5) : lerp(AMBER, AMBER_DEEP, (shade - 0.5) / 0.5);
+      const shadow = clamp01(0.5 - (sdMark(mx, my - 0.55) - 0.15) * K * unit * 0.6) * 0.45;
+      c = lerp(c, [0, 0, 0], shadow);
+      c = lerp(c, amber, clamp01(0.5 - sdMark(mx, my) * K * unit));
 
       const i = (y * size + x) * 4;
       px[i] = Math.round(c[0]);
@@ -146,7 +152,7 @@ function stamp(canvas, width, icon, size, ox, oy) {
 }
 
 // ── Installer art ──
-// Sidebar (welcome and finish pages): night background, a warm glow, the icon.
+// Sidebar (welcome and finish pages): night background, an amber glow, the icon.
 function drawSidebar() {
   const width = 164;
   const height = 314;
@@ -155,7 +161,7 @@ function drawSidebar() {
     for (let x = 0; x < width; x++) {
       let c = lerp(NIGHT_TOP, NIGHT_BOTTOM, y / height);
       const glow = clamp01(1 - Math.hypot((x - 82) / 1.1, y - 118) / 120);
-      c = lerp(c, EMBER, glow * glow * 0.45);
+      c = lerp(c, AMBER, glow * glow * 0.28);
       const i = (y * width + x) * 3;
       rgb[i] = c[0];
       rgb[i + 1] = c[1];

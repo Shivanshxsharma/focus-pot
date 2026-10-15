@@ -24,6 +24,7 @@
     Media.init();
     Links.init();
     Shots.init();
+    Clips.init();
     Settings.init();
     Shell.selectTab('focus', false);
 
@@ -34,6 +35,7 @@
     window.nb.on('toggle-pin', Shell.togglePin);
     window.nb.on('toggle-timer', Timer.toggle);
     window.nb.on('shots-changed', Shots.onExternalChange);
+    window.nb.on('clipboard-changed', Clips.onChanged);
   } catch (err) {
     console.error('[Focus Pot] startup failed:', err);
   }

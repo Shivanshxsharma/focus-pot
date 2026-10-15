@@ -1,7 +1,7 @@
 {
   "name": "focuspot",
   "productName": "Focus Pot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A taskbar companion for Windows 11 (Tauri): Pomodoro timer, tasks, media for every app, links and screenshots, in a Windows, Material or macOS Glass theme.",
   "private": true,
   "license": "MIT",

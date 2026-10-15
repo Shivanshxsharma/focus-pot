@@ -11,6 +11,7 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use tauri::{AppHandle, Manager};
 
+use crate::clipboard::ClipList;
 use crate::config::{self, CATEGORIES};
 use crate::dock::{self, Region};
 use crate::media::{self, MediaState};
@@ -50,10 +51,14 @@ pub fn load_state(app: AppHandle) -> Value {
     json!({ "data": state.store.ui_data(), "categories": CATEGORIES, "layout": layout, "look": look })
 }
 
-/// The page saves the keys it owns; moving the dock moves the window.
+/// The page saves the keys it owns; moving the dock moves the window, and
+/// the clipboard history follows its on/off setting.
 #[tauri::command]
 pub fn save_state(app: AppHandle, partial: Value) {
-    if app.state::<AppState>().store.apply_from_ui(&partial) {
+    let state = app.state::<AppState>();
+    let dock_moved = state.store.apply_from_ui(&partial);
+    state.clips.set_enabled(state.store.clip_history());
+    if dock_moved {
         dock::relayout(&app);
     }
 }
@@ -246,4 +251,41 @@ pub async fn shots_delete(app: AppHandle, file: String) -> Outcome {
 pub fn shots_set_category(app: AppHandle, file: String, category: String) -> Outcome {
     let state = app.state::<AppState>();
     Outcome::from(state.shots.set_category(&file, &category, &state.store).map(|_| String::new()))
+}
+
+// ── Clipboard history (see clipboard.rs) ───────────────────────────────────
+
+#[tauri::command]
+pub fn clip_list(app: AppHandle) -> ClipList {
+    app.state::<AppState>().clips.list()
+}
+
+#[tauri::command]
+pub async fn clip_copy(app: AppHandle, id: u64) -> Outcome {
+    blocking(move || Outcome::from(app.state::<AppState>().clips.copy(id))).await
+}
+
+/// An image from the history becomes a screenshot file, like Paste does.
+#[tauri::command]
+pub async fn clip_save(app: AppHandle, id: u64) -> Outcome {
+    blocking(move || {
+        let state = app.state::<AppState>();
+        let saved = state
+            .clips
+            .image(id)
+            .and_then(|image| state.shots.save_png(&image).map_err(|e| e.to_string()))
+            .map(|path| format!("Saved {} to Shots", short_name(&path)));
+        Outcome::from(saved)
+    })
+    .await
+}
+
+#[tauri::command]
+pub fn clip_remove(app: AppHandle, id: u64) {
+    app.state::<AppState>().clips.remove(id);
+}
+
+#[tauri::command]
+pub fn clip_clear(app: AppHandle) {
+    app.state::<AppState>().clips.clear();
 }

@@ -10,6 +10,7 @@
 //! Modules:
 //!   config.rs       numbers and defaults
 //!   store.rs        state.json
+//!   clipboard.rs    clipboard history (in memory only, off by default)
 //!   look.rs         taskbar alignment, light/dark, accent colour (registry)
 //!   dock.rs         the transparent window: placement, click-through,
 //!                   staying above the taskbar, the glass backdrop
@@ -18,6 +19,7 @@
 //!   shortcuts.rs    global keyboard shortcuts
 //!   commands.rs     everything the page may call
 
+mod clipboard;
 mod commands;
 mod config;
 mod dock;
@@ -34,6 +36,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Manager};
 use tauri_plugin_notification::NotificationExt;
 
+use clipboard::ClipHistory;
 use config::{APP_FOLDER, APP_NAME, OLD_APP_FOLDER};
 use dock::{Geometry, HitState, Layout};
 use look::Look;
@@ -44,6 +47,7 @@ use store::Store;
 pub struct AppState {
     pub store: Store,
     pub shots: Shots,
+    pub clips: ClipHistory,
     pub look: Mutex<Look>,
     pub layout: Mutex<Layout>,
     pub geometry: Mutex<Geometry>,
@@ -115,9 +119,11 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         scale: geometry.scale,
         suspended: false,
     }));
+    let clips = ClipHistory::new(store.clip_history());
     app.manage(AppState {
         store,
         shots: Shots::new(pictures),
+        clips,
         look: Mutex::new(look),
         layout: Mutex::new(layout),
         geometry: Mutex::new(geometry),
@@ -126,6 +132,7 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     dock::spawn_hit_test(window, hit);
     dock::spawn_watcher(handle.clone());
+    clipboard::spawn_watcher(handle.clone());
     shortcuts::register(&handle);
     Ok(())
 }
@@ -167,6 +174,11 @@ pub fn run() {
             commands::shots_copy,
             commands::shots_delete,
             commands::shots_set_category,
+            commands::clip_list,
+            commands::clip_copy,
+            commands::clip_save,
+            commands::clip_remove,
+            commands::clip_clear,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|err| eprintln!("{APP_NAME} stopped: {err}"));

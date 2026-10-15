@@ -21,7 +21,7 @@
   const { listen } = window.__TAURI__.event;
 
   // Events the backend may push. Anything else is refused.
-  const EVENT_CHANNELS = ['toggle-pin', 'toggle-timer', 'shots-changed', 'layout', 'look', 'outside-click'];
+  const EVENT_CHANNELS = ['toggle-pin', 'toggle-timer', 'shots-changed', 'layout', 'look', 'outside-click', 'clipboard-changed'];
 
   window.nb = {
     // ── Window & app ──
@@ -63,6 +63,15 @@
       copy: (file) => invoke('shots_copy', { file: String(file) }),
       remove: (file) => invoke('shots_delete', { file: String(file) }),
       setCategory: (file, category) => invoke('shots_set_category', { file: String(file), category: String(category) }),
+    },
+
+    // ── Clipboard history (Shots tab → Clipboard) ──
+    clips: {
+      list: () => invoke('clip_list'),
+      copy: (id) => invoke('clip_copy', { id: Number(id) }),
+      save: (id) => invoke('clip_save', { id: Number(id) }),
+      remove: (id) => invoke('clip_remove', { id: Number(id) }),
+      clear: () => invoke('clip_clear'),
     },
 
     // ── Events from the backend ──

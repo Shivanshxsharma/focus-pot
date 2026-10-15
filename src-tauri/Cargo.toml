@@ -7,7 +7,7 @@
 
 [package]
 name = "focuspot"
-version = "1.0.0"
+version = "1.1.0"
 description = "Focus Pot: a taskbar companion for Windows 11 with a Pomodoro timer, tasks, media, links and screenshots"
 authors = ["Shivansh Sharma"]
 license = "MIT"
@@ -52,6 +52,7 @@ features = [
   "Win32_Media_Audio_Endpoints",
   "Win32_Storage_FileSystem",       # app names from .exe version info
   "Win32_System_Com",
+  "Win32_System_DataExchange",       # clipboard history: change counter, "keep private" flags
   "Win32_System_Com_StructuredStorage",
   "Win32_System_Diagnostics_ToolHelp",
   "Win32_System_Threading",

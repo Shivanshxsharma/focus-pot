@@ -41,6 +41,14 @@ pub const GLASS_SCALE: u32 = 3;
 pub const GLASS_BLUR: f32 = 18.0;
 
 pub const GALLERY_LIMIT: usize = 60;
+
+/// Clipboard history (in memory only): how often to look for a new copy,
+/// how much to keep, and the longest text worth keeping.
+pub const CLIP_POLL_MS: u64 = 400;
+pub const CLIP_ITEMS_MAX: usize = 30;
+pub const CLIP_IMAGES_MAX: usize = 10;
+pub const CLIP_TEXT_MAX: usize = 100_000;
+pub const CLIP_PREVIEW_CHARS: usize = 400;
 pub const THUMB_WIDTH: u32 = 200;
 pub const THUMB_CACHE_MAX: usize = 300;
 pub const CATEGORIES: [&str; 6] = ["Study", "Code", "Work", "Fun", "Other", "Uncategorized"];

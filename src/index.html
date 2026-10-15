@@ -188,16 +188,15 @@
         <path d="M5.8 11H18.2A1.05 1.05 0 0 1 18.2 13.1H5.8A1.05 1.05 0 0 1 5.8 11Z" />
         <path d="M7.2 14.3H16.8A1.3 1.3 0 0 1 17.93 16.24L15.62 20.34A1.3 1.3 0 0 1 14.49 21H9.51A1.3 1.3 0 0 1 8.38 20.34L6.07 16.24A1.3 1.3 0 0 1 7.2 14.3Z" />
       </symbol>
-      <!-- Brand colours: ember, light at the top-left, deep at the bottom-right. -->
-      <linearGradient id="brandEmber" x1="7" y1="3" x2="16" y2="21" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#ffa060" />
-        <stop offset="0.55" stop-color="#ec5c34" />
-        <stop offset="1" stop-color="#c43428" />
+      <!-- Brand colours: an amber mark (lightest at the leaf) on a black tile. -->
+      <linearGradient id="brandAmber" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#ffd88a" />
+        <stop offset="0.5" stop-color="#ffb238" />
+        <stop offset="1" stop-color="#ec8014" />
       </linearGradient>
       <linearGradient id="brandTile" x1="0" y1="0" x2="0.75" y2="1">
-        <stop offset="0" stop-color="#ffa060" />
-        <stop offset="0.55" stop-color="#ec5c34" />
-        <stop offset="1" stop-color="#c43428" />
+        <stop offset="0" stop-color="#2a292d" />
+        <stop offset="1" stop-color="#060608" />
       </linearGradient>
       <filter id="liquidEdge" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
         <feImage id="liquidMap" preserveAspectRatio="none" result="map" />
@@ -362,6 +361,12 @@
 
           <!-- ───────────── Screenshots ───────────── -->
           <section class="page" data-page="shots" role="tabpanel">
+            <div class="segmented view-switch" role="radiogroup" aria-label="Screenshots or clipboard">
+              <button role="radio" data-shots-view="shots" aria-checked="true"><svg class="icon"><use href="#i-images" /></svg>Screenshots</button>
+              <button role="radio" data-shots-view="clips" aria-checked="false"><svg class="icon"><use href="#i-paste" /></svg>Clipboard</button>
+            </div>
+
+            <div id="shotsPane">
             <div class="shot-toolbar">
               <button id="shotCapture" class="btn-tonal" title="Capture the screen (Ctrl+Alt+S)"><svg class="icon"><use href="#i-scan" /></svg><span>Capture</span></button>
               <button id="shotPaste" class="btn-tonal" title="Save the clipboard image (Ctrl+Alt+V)"><svg class="icon"><use href="#i-paste" /></svg><span>Paste</span></button>
@@ -375,6 +380,30 @@
               <svg class="icon"><use href="#i-images" /></svg>
               <strong id="shotEmptyTitle">No screenshots yet</strong>
               <span id="shotEmptyText">Capture one, paste a Win+Shift+S snip, or import the Windows folder.</span>
+            </div>
+            </div>
+
+            <!-- The clipboard history (clips.js). Off until you turn it on;
+                 kept in memory only; password managers' copies are skipped. -->
+            <div id="clipsPane" hidden>
+              <div class="card-stack">
+                <label class="row-card">
+                  <svg class="icon row-icon"><use href="#i-paste" /></svg>
+                  <span class="row-text"><span>Remember what I copy</span><span class="caption">The last 30 copies, in memory only. Passwords are skipped.</span></span>
+                  <input id="clipEnabled" class="switch" type="checkbox" />
+                </label>
+              </div>
+              <div class="clip-bar">
+                <span id="clipCount" class="summary"></span>
+                <button id="clipClear" class="btn-tonal small" type="button" hidden>Clear all</button>
+              </div>
+              <div id="clipStatus" class="status" role="status"></div>
+              <div id="clipList" class="clip-list"></div>
+              <div id="clipEmpty" class="empty-state">
+                <svg class="icon"><use href="#i-paste" /></svg>
+                <strong id="clipEmptyTitle">Clipboard history is off</strong>
+                <span id="clipEmptyText">Turn it on to keep what you copy, text and images, a click away.</span>
+              </div>
             </div>
           </section>
 
@@ -456,10 +485,11 @@
             </div>
             <h3 class="section-title">About</h3>
             <div class="row-card about-card">
-              <!-- The app icon: the mark on an ember tile (like the .exe's icon). -->
+              <!-- The app icon: the amber mark on a black tile (like the .exe's icon). -->
               <svg class="app-tile" viewBox="0 0 24 24" aria-hidden="true">
                 <rect width="24" height="24" rx="5.4" fill="url(#brandTile)" />
-                <use href="#brand-glyph" fill="#fffbf6" transform="translate(12 12) scale(0.86) translate(-12 -12)" />
+                <rect x="0.25" y="0.25" width="23.5" height="23.5" rx="5.2" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="0.5" />
+                <use href="#brand-glyph" fill="url(#brandAmber)" transform="translate(12 12) scale(0.86) translate(-12 -12)" />
               </svg>
               <span class="row-text">
                 <span class="about-name">Focus Pot</span>
@@ -476,9 +506,9 @@
       </div>
 
       <footer class="flyout-footer">
-        <!-- The brand: the mark in ember and the wordmark in Fraunces Italic. -->
+        <!-- The brand: the mark in amber and the wordmark in Fraunces Italic. -->
         <span class="brand">
-          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#brand-glyph" fill="url(#brandEmber)" /></svg>
+          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#brand-glyph" fill="url(#brandAmber)" /></svg>
           <span class="brand-name">Focus Pot</span>
         </span>
         <span class="spacer"></span>
@@ -509,6 +539,7 @@
     <script src="js/media.js"></script>
     <script src="js/links.js"></script>
     <script src="js/shots.js"></script>
+    <script src="js/clips.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/app.js"></script>
   </body>

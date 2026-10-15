@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/screenshots/banner.png" alt="Focus Pot. Grow your focus. Pomodoro, tasks, music and screenshots on your Windows taskbar." width="100%">
+  <img src="docs/screenshots/banner.png" alt="Focus Pot. Grow your focus. Pomodoro, tasks, music and clipboard on your Windows taskbar." width="100%">
 </p>
 
 <p align="center">
@@ -7,25 +7,24 @@
   &nbsp;·&nbsp; Windows 10 / 11, 64-bit &nbsp;·&nbsp; Free and open source (MIT)
 </p>
 
-**Focus Pot** is a small, premium companion that lives on the empty left end of your Windows taskbar. Tap the pill for a Pomodoro timer, your tasks, controls for whatever is playing, quick links and a screenshot organizer, in a Windows, Material or macOS Liquid Glass look.
+**Focus Pot** is a small, premium companion that lives on the empty left end of your Windows taskbar. Tap the pill for a Pomodoro timer, your tasks, controls for whatever is playing, your clipboard history, quick links and a screenshot organizer, in a Windows, Material or macOS Liquid Glass look.
 
 <p align="center">
-  <img src="docs/screenshots/windows-focus.png" width="32%" alt="The Windows theme: the Focus tab with a running session">
-  <img src="docs/screenshots/material-media.png" width="32%" alt="The Material theme: the Media tab with a song playing">
-  <img src="docs/screenshots/glass-tasks.png" width="32%" alt="The macOS Glass theme: the Tasks tab over a colourful wallpaper">
-</p>
-<p align="center">
-  <img src="docs/screenshots/pill-timer.png" width="44%" alt="The pill on the taskbar showing the timer">
-  <img src="docs/screenshots/pill-music.png" width="44%" alt="The pill on the taskbar showing the mini music player">
+  <img src="docs/screenshots/hero.jpg" width="100%" alt="Focus Pot on a Windows desktop: the panel open above the pill at the left end of the taskbar, with a focus session running">
 </p>
 
 ## Features
 
+<p align="center">
+  <img src="docs/screenshots/features.jpg" width="100%" alt="Three Focus Pot panels: the task list, a song playing with art and a seekable timeline, and the clipboard history">
+</p>
+
 - **Pomodoro on your taskbar.** The pill shows the countdown, a progress ring and the task you're on. Pick a preset (25/5, 15/3, 50/10, 90/15) or set your own lengths, and get a gentle nudge if you drift.
 - **Tasks.** A simple list; star one and it follows you onto the taskbar.
 - **Every player in one place.** Spotify, each browser tab, Media Player…: album art, a seekable timeline and controls for each, plus the system volume. Swap the pill to a mini player with **›**.
-- **Quick links.** Your sites, one click away.
+- **Clipboard history.** What you copied lately, text and images, one click away again; save an image straight into your screenshots. Off until you turn it on, kept in memory only, and it never records what password managers mark as private.
 - **Screenshots, organised.** Capture the screen (`Ctrl`+`Alt`+`S`), keep a `Win`+`Shift`+`S` snip (`Ctrl`+`Alt`+`V`), sort them into Study, Code, Work and Fun.
+- **Quick links.** Your sites, one click away.
 - **Three looks.** Windows 11 Fluent, Material 3 (Material You) and macOS Liquid Glass. All of them follow your Windows accent colour.
 - **Light.** Built with Tauri (Rust and the WebView2 that's already in Windows): an 8 MB app.
 - **Private.** No account, no tracking, nothing leaves your PC.
@@ -33,7 +32,7 @@
 ## Install
 
 1. Download **FocusPot-Setup.exe** from the [latest release](https://github.com/Shivanshxsharma/focus-pot/releases/latest).
-2. Run it. Windows may say *"Windows protected your PC"* because the installer isn't code-signed yet: click **More info → Run anyway**.
+2. Run it. Windows may say *"Windows protected your PC"* because the installer isn't code-signed yet: click **More info → Run anyway**. (If *Smart App Control* blocks it instead, see [Troubleshooting](#troubleshooting).)
 3. The pill appears at the left end of your taskbar. **Tap it.**
 
 To uninstall: Settings → Apps → Installed apps → Focus Pot. Your data stays in `%APPDATA%\FocusPot`; delete that folder to remove it too.
@@ -52,6 +51,7 @@ To uninstall: Settings → Apps → Installed apps → Focus Pot. Your data stay
 | Pick your active task | Tasks → hover a task → ☆ |
 | Change the look | Settings → Theme → Windows, Material or macOS Glass |
 | Make the glass clearer or more tinted | Settings → Theme → **Glass** slider (macOS Glass theme) |
+| Get back something you copied | Shots → **Clipboard** → turn on *Remember what I copy*, then click any item |
 
 ### Keyboard shortcuts (work in any app)
 
@@ -64,9 +64,13 @@ To uninstall: Settings → Apps → Installed apps → Focus Pot. Your data stay
 | `Ctrl` + `Alt` + `Q` | Quit Focus Pot |
 | `Esc` (panel focused) | Unpin and close |
 
-## Three themes (Settings → Theme)
+## Three looks (Settings → Theme)
 
-All three are dark and all three take their colour from **your Windows accent**.
+All three are dark and all three take their colour from **your Windows accent** (amber in these pictures).
+
+<p align="center">
+  <img src="docs/screenshots/themes.jpg" width="100%" alt="The Focus tab in the three looks: Windows, Material and macOS Glass">
+</p>
 
 | | **Windows** | **Material** | **macOS Glass** |
 | --- | --- | --- | --- |
@@ -79,13 +83,22 @@ All three are dark and all three take their colour from **your Windows accent**.
 | Media card | Quick Settings card: art on the right, controls below | Android media player: art-tinted scrim, wavy progress, morphing play button | Now Playing: blurred album-art glow, scrubber that grows when touched |
 | Volume | Fluent slider | M3 slider (thick track, thin handle) | Control Center's thick white capsule |
 
+## The pill
+
+<p align="center">
+  <img src="docs/screenshots/pill.png" width="90%" alt="The pill on the taskbar: as a timer with the task you're on, and as a mini music player">
+</p>
+
 ## Privacy
 
 - Everything stays on your PC: tasks, links and settings in `%APPDATA%\FocusPot\state.json`, screenshots in `Pictures\FocusPot`.
 - Focus Pot doesn't talk to the internet. The only thing that opens a web page is you clicking a link.
 - To draw its glass, the macOS Glass theme takes a small, blurred picture of what's behind its panel. It stays in memory and is never saved or sent anywhere.
+- The clipboard history is off until you turn it on. It keeps the last 30 copies in memory only (quitting forgets them), skips anything a password manager marks as private, and turning it off forgets everything at once.
 
 ## Troubleshooting
+
+**Windows blocks the installer or the app** (*"Smart App Control blocked an app"*, or *"An Application Control policy has blocked this file"*). Focus Pot isn't code-signed yet, and Windows 11's Smart App Control blocks unsigned apps it doesn't recognise; there's no per-app exception. The only way around it is turning Smart App Control off (Windows Security → App & browser control → Smart App Control settings), and Windows can't turn it back on without a reset, so only do that if you're comfortable with it. Signed releases are planned.
 
 **The music pill overlaps my pinned taskbar icons.** With many pinned apps, the centered icons reach further left. Swap the pill back to the timer, turn off **Settings → Music in the pill**, or set **Dock** to *Above taskbar*.
 

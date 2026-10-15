@@ -64,6 +64,7 @@ fn sanitize_settings(raw: Option<&Value>) -> Value {
         "miniPlayer": s.get("miniPlayer").and_then(Value::as_bool).unwrap_or(true),
         "pillFace": pick(s.get("pillFace"), &PILL_FACES, "timer"),
         "glassTint": int(s.get("glassTint"), 0, 100, 40), // macOS theme: 0 clear … 100 tinted
+        "clipHistory": s.get("clipHistory").and_then(Value::as_bool).unwrap_or(false), // off until you turn it on
     })
 }
 
@@ -159,6 +160,11 @@ impl Store {
             mode: s["settings"]["dock"].as_str().unwrap_or("auto").to_string(),
             offset: s["settings"]["dockOffset"].as_f64().unwrap_or(12.0),
         }
+    }
+
+    /// Whether the clipboard history is on (Shots tab → Clipboard).
+    pub fn clip_history(&self) -> bool {
+        self.state.lock().unwrap()["settings"]["clipHistory"].as_bool().unwrap_or(false)
     }
 
     /// Screenshot categories: { "<full path>": "Code", … }
