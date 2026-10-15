@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
+    "build:signed": "tauri build --config src-tauri/tauri.signing.conf.json",
     "assets": "node scripts/fetch-assets.js",
     "icon": "node scripts/make-icon.js"
   },

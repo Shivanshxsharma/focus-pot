@@ -2033,14 +2033,14 @@ body[data-dock='above'] .trigger {
 }
 
 /* ── 14. Footer: the brand, today's sessions, pin, quit ───────────────────── */
-/* The wordmark's font: Fraunces Italic (OFL), only the letters of
-   "Focus Pot", so the file is 2 KB. Same in every theme: it's the brand. */
+/* The wordmark's font: Geist SemiBold (OFL), only the letters of
+   "Focus Pot", so the file is about 1 KB. Same in every theme: it's the brand. */
 @font-face {
   font-family: 'Focus Pot Brand';
-  font-style: italic;
+  font-style: normal;
   font-weight: 600;
   font-display: block;
-  src: url('../fonts/brand-fraunces.woff2') format('woff2');
+  src: url('../fonts/brand-geist.woff2') format('woff2');
 }
 
 .flyout-footer {
@@ -2067,20 +2067,19 @@ body[data-dock='above'] .trigger {
   flex: none;
 }
 
-/* The wordmark: Fraunces Italic, a touch of negative tracking. The mark's
-   colour (amber) is fixed in every theme: it's the brand, not the accent. */
+/* The wordmark: Geist SemiBold, tracked tight like a product name. The
+   mark's colour (amber) is fixed in every theme: it's the brand, not the accent. */
 .brand-name,
 .about-name {
-  font-family: 'Focus Pot Brand', Georgia, serif;
-  font-style: italic;
+  font-family: 'Focus Pot Brand', 'Segoe UI Variable Display', sans-serif;
   font-weight: 600;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.03em;
   white-space: nowrap;
   color: var(--text-1);
 }
 
 .brand-name {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 20px;
 }
 

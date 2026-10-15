@@ -6,8 +6,8 @@
  * This script draws it in code and writes
  *
  *   src-tauri/icons/32x32.png, 128x128.png, 128x128@2x.png, icon.png, icon.ico
- *       the app icon: an amber mark on a black tile, with a soft light from
- *       the top-left, a faint amber glow behind the mark and a thin bright rim
+ *       the app icon: a solid amber mark on a flat black tile, with only a
+ *       hairline rim so the tile keeps its edge on a black taskbar
  *   src-tauri/icons/installer-sidebar.bmp (164×314), installer-header.bmp (150×57)
  *       the artwork the Windows installer shows (NSIS wants BMP files)
  *
@@ -27,14 +27,10 @@ const zlib = require('zlib');
 
 const OUT = path.join(__dirname, '..', 'src-tauri', 'icons');
 
-// ── Brand colours (the in-app mark uses the same: #brandAmber in index.html) ──
-const AMBER_LIGHT = [255, 216, 138]; // #ffd88a, the top of the mark
-const AMBER = [255, 178, 56]; // #ffb238
-const AMBER_DEEP = [236, 128, 20]; // #ec8014, the bottom of the pot
-const TILE_TOP = [32, 31, 34]; // the black tile, lit a little at the top-left
-const TILE_BOTTOM = [6, 6, 8];
-const NIGHT_TOP = [22, 21, 24];
-const NIGHT_BOTTOM = [9, 9, 11];
+// ── Brand colours: flat, no gradients (the in-app mark uses the same, in index.html) ──
+const AMBER = [255, 178, 56]; // #ffb238, the one accent
+const TILE = [17, 17, 19]; // #111113
+const NIGHT = [10, 10, 11]; // #0a0a0b, installer sidebar
 
 // ── Shapes ──
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -109,25 +105,15 @@ function drawIcon(size) {
       const gy = ((y + 0.5) / size) * 256;
       const dTile = sdRoundRect(gx, gy, 0, 0, 256, 256, 58);
 
-      // Black, a touch lighter at the top-left, with a soft light there too.
-      let c = lerp(TILE_TOP, TILE_BOTTOM, clamp01((gx * 0.45 + gy) / 330));
-      c = lerp(c, [255, 255, 255], clamp01(1 - Math.hypot(gx - 70, gy - 10) / 210) * 0.07);
-      // A faint amber glow behind the mark, as if it lit the tile.
-      const glow = clamp01(1 - Math.hypot(gx - 128, gy - 136) / 118);
-      c = lerp(c, AMBER, glow * glow * 0.13);
-      // A thin bright rim: brightest along the top, faint all round, so the
-      // tile still has an edge on a black taskbar.
-      const rim = clamp01(1 - Math.abs(dTile + 1.6) / 1.6);
-      c = lerp(c, [255, 255, 255], rim * (0.07 + 0.2 * clamp01((128 - gy) / 128)));
+      // Flat black, and a hairline rim so the tile keeps an edge on a black taskbar.
+      let c = TILE;
+      const rim = clamp01(1 - Math.abs(dTile + 1.2) / 1.2);
+      c = lerp(c, [255, 255, 255], rim * 0.12);
 
-      // The mark: amber, lightest at the leaf, deepest at the bottom of the pot.
+      // The mark: one solid amber.
       const mx = (gx - 128) / K + 12;
       const my = (gy - 128) / K + 12;
-      const shade = clamp01((my - 3) / 18);
-      const amber = shade < 0.5 ? lerp(AMBER_LIGHT, AMBER, shade / 0.5) : lerp(AMBER, AMBER_DEEP, (shade - 0.5) / 0.5);
-      const shadow = clamp01(0.5 - (sdMark(mx, my - 0.55) - 0.15) * K * unit * 0.6) * 0.45;
-      c = lerp(c, [0, 0, 0], shadow);
-      c = lerp(c, amber, clamp01(0.5 - sdMark(mx, my) * K * unit));
+      c = lerp(c, AMBER, clamp01(0.5 - sdMark(mx, my) * K * unit));
 
       const i = (y * size + x) * 4;
       px[i] = Math.round(c[0]);
@@ -152,16 +138,14 @@ function stamp(canvas, width, icon, size, ox, oy) {
 }
 
 // ── Installer art ──
-// Sidebar (welcome and finish pages): night background, an amber glow, the icon.
+// Sidebar (welcome and finish pages): flat black, the icon.
 function drawSidebar() {
   const width = 164;
   const height = 314;
   const rgb = Buffer.alloc(width * height * 3);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      let c = lerp(NIGHT_TOP, NIGHT_BOTTOM, y / height);
-      const glow = clamp01(1 - Math.hypot((x - 82) / 1.1, y - 118) / 120);
-      c = lerp(c, AMBER, glow * glow * 0.28);
+      const c = NIGHT;
       const i = (y * width + x) * 3;
       rgb[i] = c[0];
       rgb[i + 1] = c[1];

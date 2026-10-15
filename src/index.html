@@ -188,16 +188,6 @@
         <path d="M5.8 11H18.2A1.05 1.05 0 0 1 18.2 13.1H5.8A1.05 1.05 0 0 1 5.8 11Z" />
         <path d="M7.2 14.3H16.8A1.3 1.3 0 0 1 17.93 16.24L15.62 20.34A1.3 1.3 0 0 1 14.49 21H9.51A1.3 1.3 0 0 1 8.38 20.34L6.07 16.24A1.3 1.3 0 0 1 7.2 14.3Z" />
       </symbol>
-      <!-- Brand colours: an amber mark (lightest at the leaf) on a black tile. -->
-      <linearGradient id="brandAmber" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#ffd88a" />
-        <stop offset="0.5" stop-color="#ffb238" />
-        <stop offset="1" stop-color="#ec8014" />
-      </linearGradient>
-      <linearGradient id="brandTile" x1="0" y1="0" x2="0.75" y2="1">
-        <stop offset="0" stop-color="#2a292d" />
-        <stop offset="1" stop-color="#060608" />
-      </linearGradient>
       <filter id="liquidEdge" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
         <feImage id="liquidMap" preserveAspectRatio="none" result="map" />
         <feDisplacementMap id="liquidShift" in="SourceGraphic" in2="map" scale="0" xChannelSelector="R" yChannelSelector="G" />
@@ -487,9 +477,9 @@
             <div class="row-card about-card">
               <!-- The app icon: the amber mark on a black tile (like the .exe's icon). -->
               <svg class="app-tile" viewBox="0 0 24 24" aria-hidden="true">
-                <rect width="24" height="24" rx="5.4" fill="url(#brandTile)" />
+                <rect width="24" height="24" rx="5.4" fill="#111113" />
                 <rect x="0.25" y="0.25" width="23.5" height="23.5" rx="5.2" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="0.5" />
-                <use href="#brand-glyph" fill="url(#brandAmber)" transform="translate(12 12) scale(0.86) translate(-12 -12)" />
+                <use href="#brand-glyph" fill="#ffb238" transform="translate(12 12) scale(0.86) translate(-12 -12)" />
               </svg>
               <span class="row-text">
                 <span class="about-name">Focus Pot</span>
@@ -499,16 +489,16 @@
             </div>
             <p class="about">
               Icons: Keyline (MIT) · Material Symbols (Apache 2.0) · Framework7 (MIT)<br />
-              Fonts: Google Sans Flex · Inter · Fraunces (SIL Open Font License)
+              Fonts: Google Sans Flex · Inter · Geist (SIL Open Font License)
             </p>
           </section>
         </div>
       </div>
 
       <footer class="flyout-footer">
-        <!-- The brand: the mark in amber and the wordmark in Fraunces Italic. -->
+        <!-- The brand: the mark in solid amber and the wordmark in Geist SemiBold. -->
         <span class="brand">
-          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#brand-glyph" fill="url(#brandAmber)" /></svg>
+          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#brand-glyph" fill="#ffb238" /></svg>
           <span class="brand-name">Focus Pot</span>
         </span>
         <span class="spacer"></span>

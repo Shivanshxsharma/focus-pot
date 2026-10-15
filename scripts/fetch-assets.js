@@ -11,7 +11,7 @@
  *                    Inter               (OFL 1.1)   https://fonts.google.com/specimen/Inter
  *                    (Apple's own SF Symbols / SF Pro may only be used on Apple
  *                    platforms; Framework7 and Inter are the open look-alikes.)
- *   Wordmark       → Fraunces Italic     (OFL 1.1)   only the letters of "Focus Pot"
+ *   Wordmark       → Geist SemiBold      (OFL 1.1)   only the letters of "Focus Pot"
  *
  * The UI refers to icons by a LOGICAL name (e.g. "play"). The table below maps
  * each logical name to one icon from each set. This script downloads them via
@@ -85,7 +85,7 @@ const FONTS = [
   { query: 'Inter:opsz,wght@14..32,300..700', subsets: ['latin', 'latin-ext'], prefix: 'inter' },
 ];
 // The wordmark only needs these letters, so Google Fonts can send a tiny file.
-const BRAND_FONT = { query: 'Fraunces:ital,wght@1,600', text: 'Focus Pot', file: 'brand-fraunces.woff2' };
+const BRAND_FONT = { query: 'Geist:wght@600', text: 'Focus Pot', file: 'brand-geist.woff2' };
 
 const ROOT = path.join(__dirname, '..');
 const HTML_FILE = path.join(ROOT, 'src', 'index.html');
