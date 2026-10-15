@@ -7,7 +7,7 @@
 
 [package]
 name = "focuspot"
-version = "1.1.0"
+version = "1.1.1"
 description = "Focus Pot: a taskbar companion for Windows 11 with a Pomodoro timer, tasks, media, links and screenshots"
 authors = ["Shivansh Sharma"]
 license = "MIT"

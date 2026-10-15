@@ -98,7 +98,7 @@ All three are dark and all three take their colour from **your Windows accent** 
 
 ## Troubleshooting
 
-**Windows blocks the installer or the app** (*"Smart App Control blocked an app"*, or *"An Application Control policy has blocked this file"*). Focus Pot isn't code-signed yet, and Windows 11's Smart App Control blocks unsigned apps it doesn't recognise; there's no per-app exception. The only way around it is turning Smart App Control off (Windows Security → App & browser control → Smart App Control settings), and Windows can't turn it back on without a reset, so only do that if you're comfortable with it. Signed releases are planned.
+**Windows blocks the installer or the app** (*"Smart App Control blocked an app"*, or *"An Application Control policy has blocked this file"*). Focus Pot isn't code-signed yet, and Windows 11's Smart App Control blocks unsigned apps it doesn't recognise; there's no per-app exception. The only way around it is turning Smart App Control off (Windows Security → App & browser control → Smart App Control settings), and Windows can't turn it back on without a reset, so only do that if you're comfortable with it.
 
 **The music pill overlaps my pinned taskbar icons.** With many pinned apps, the centered icons reach further left. Swap the pill back to the timer, turn off **Settings → Music in the pill**, or set **Dock** to *Above taskbar*.
 
